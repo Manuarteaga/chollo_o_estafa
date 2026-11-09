@@ -147,10 +147,27 @@ with col_m2:
     
     precio_contado = st.number_input("Precio al Contado (€)", min_value=0.0, value=14500.0, step=500.0, format="%.2f")
     
+    # --- BLOQUE DE FINANCIACIÓN DESGLOSADO ---
     tiene_financiacion = st.checkbox("¿Tiene opción o precio financiado?")
-    precio_financiado = 0.0
+    
+    entrada_dinero = 0.0
+    cuota_mensual = 0.0
+    num_cuotas = 0
+    precio_financiado_total = 0.0
+
     if tiene_financiacion:
-        precio_financiado = st.number_input("Precio Total Financiado (Suma de cuotas + entrada) (€)", min_value=0.0, value=16800.0, step=500.0, format="%.2f")
+        st.markdown("##### 💳 Desglose de la Financiación")
+        col_f1, col_f2, col_f3 = st.columns(3)
+        with col_f1:
+            entrada_dinero = st.number_input("Entrada (€)", min_value=0.0, value=3000.0, step=500.0, format="%.2f")
+        with col_f2:
+            cuota_mensual = st.number_input("Cuota Mensual (€/mes)", min_value=0.0, value=230.0, step=10.0, format="%.2f")
+        with col_f3:
+            num_cuotas = st.number_input("Número de Cuotas (meses)", min_value=1, max_value=120, value=60, step=6)
+        
+        # Cálculo automático del precio total financiado
+        precio_financiado_total = entrada_dinero + (cuota_mensual * num_cuotas)
+        st.caption(f"💰 **Precio Total Financiado:** {entrada_dinero:,.2f}€ (Entrada) + ({cuota_mensual:,.2f}€ × {num_cuotas} meses) = **{precio_financiado_total:,.2f}€**".replace(",", "X").replace(".", ",").replace("X", "."))
 
     etiqueta_dgt = st.selectbox("Etiqueta Ambiental DGT", ["ECO / Cero", "C", "B", "Sin Etiqueta"])
 
@@ -194,21 +211,27 @@ if st.button("Analizar si está Barato, Correcto o Caro", type="primary", use_co
         detalle = f"El precio al contado supera en un {variacion_pct:.1f}% la estimación teórica de mercado."
 
     # Informe final en pantalla
-    st.markdown(f"### 📊 Resultado del Análisis: **{marca_final} {modelo_final}** ({potencia_cv} CV - {combustible} - {transmisión})")
+    st.markdown(f"### 📊 Resultado del Análisis: **{marca_final} {modelo_final}** ({potencia_cv} CV - {combustible} - {transmision})")
     
     m1, m2, m3 = st.columns(3)
     m1.metric("Valor Teórico Estimado", f"{formato_es(valor_mercado_ajustado)} €")
     m2.metric("Precio al Contado", f"{formato_es(precio_contado)} €")
     m3.metric("Desviación de Mercado", f"{variacion_pct:+.1f}%".replace(".", ","))
     
-    if tiene_financiacion and precio_financiado > 0:
-        sobrecoste_financiacion = precio_financiado - precio_contado
+    # --- RESULTADOS DE FINANCIACIÓN DESGLOSADOS ---
+    if tiene_financiacion and precio_financiado_total > 0:
+        sobrecoste_financiacion = precio_financiado_total - precio_contado
         st.markdown("---")
-        col_f1, col_f2 = st.columns(2)
-        col_f1.metric("Precio Total Financiado", f"{formato_es(precio_financiado)} €")
-        col_f2.metric("Sobrecoste por Financiar (Intereses/Comisiones)", f"+ {formato_es(sobrecoste_financiacion)} €", delta_color="inverse")
+        st.markdown("### 💳 Análisis de la Financiación")
+        
+        f1, f2, f3, f4 = st.columns(4)
+        f1.metric("Entrada Inicial", f"{formato_es(entrada_dinero)} €")
+        f2.metric("Cuota Mensual", f"{formato_es(cuota_mensual)} € / mes", delta=f"{num_cuotas} meses", delta_color="off")
+        f3.metric("Total Financiado", f"{formato_es(precio_financiado_total)} €")
+        f4.metric("Sobrecoste (Intereses/Comisiones)", f"+ {formato_es(sobrecoste_financiacion)} €", delta_color="inverse")
+        
         if sobrecoste_financiacion > 2000:
-            st.warning(f"⚠️ **Aviso de Financiación:** Estás pagando **{formato_es(sobrecoste_financiacion)} € extra** sobre el precio al contado. Valora si los descuentos aplicados por financiar compensan este sobrecoste.")
+            st.warning(f"⚠️ **Aviso de Financiación:** Al financiar pagas **{formato_es(sobrecoste_financiacion)} € más** que al contado. Comprueba si los descuentos de la oferta compensan los intereses totales.")
 
     st.markdown(f"#### Veredicto: {estado}")
     st.info(f"**Justificación:** {detalle}")

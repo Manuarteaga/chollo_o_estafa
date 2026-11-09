@@ -92,6 +92,15 @@ BASE_DATOS_COCHES = {
     }
 }
 
+# Catálogo de entidades bancarias/financieras alternativas con sus condiciones de mercado
+ENTIDADES_FINANCIERAS = [
+    {"entidad": "ING (Préstamo Naranja Coches)", "tin": 5.49, "comision_apertura": 0.0, "destacado": "Sin comisiones y 100% online"},
+    {"entidad": "BBVA (Préstamo Coche Online)", "tin": 5.95, "comision_apertura": 0.0, "destacado": "Respuesta rápida para clientes y no clientes"},
+    {"entidad": "Openbank (Préstamo Personal)", "tin": 4.95, "comision_apertura": 0.0, "destacado": "El interés más bajo si domicilias nómina"},
+    {"entidad": "Banco Santander (Préstamo Coche)", "tin": 6.25, "comision_apertura": 1.0, "destacado": "Financiación flexible hasta 8 años"},
+    {"entidad": "Younited Credit", "tin": 5.75, "comision_apertura": 0.0, "destacado": "Plataforma 100% digital rápida"}
+]
+
 st.markdown("### 📋 Datos del Vehículo y Financiación")
 
 col_m1, col_m2 = st.columns(2)
@@ -157,14 +166,12 @@ with col_m2:
     tin_pct = 0.0
 
     if tiene_financiacion:
-        st.markdown("##### 💳 Opciones de Financiación")
+        st.markdown("##### 💳 Opciones de Financiación del Concesionario")
         
-        # 1. Opción de introducir el precio total financiado directamente
         precio_financiado_total = st.number_input("Precio Total Financiado (si lo sabes directo) (€)", min_value=0.0, value=16800.0, step=500.0, format="%.2f")
         
         st.markdown("<p style='text-align: center; color: gray; margin: 0;'>— O desglósalo aquí abajo —</p>", unsafe_allow_html=True)
         
-        # 2. Desglose detallado por cuotas, entrada y TIN
         col_f1, col_f2 = st.columns(2)
         with col_f1:
             entrada_dinero = st.number_input("Entrada (€)", min_value=0.0, value=3000.0, step=500.0, format="%.2f")
@@ -173,7 +180,6 @@ with col_m2:
             num_cuotas = st.number_input("Nº Cuotas (meses)", min_value=0, max_value=120, value=60, step=6)
             tin_pct = st.number_input("Tipo de Interés TIN (%)", min_value=0.0, max_value=30.0, value=8.5, step=0.25, format="%.2f")
         
-        # Si se rellenan las cuotas, calculamos el total desglosado
         if cuota_mensual > 0 and num_cuotas > 0:
             calculo_desglose = entrada_dinero + (cuota_mensual * num_cuotas)
             precio_financiado_total = calculo_desglose
@@ -185,6 +191,13 @@ st.markdown("---")
 def formato_es(valor):
     """Convierte un número a formato español: puntos para miles y coma para decimales"""
     return f"{valor:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
+
+def calcular_cuota_francesa(capital, tin, meses):
+    """Calcula la cuota mensual mediante la fórmula de amortización francesa"""
+    if tin == 0 or meses == 0:
+        return capital / max(1, meses)
+    r = (tin / 100) / 12
+    return capital * (r * ((1 + r) ** meses)) / (((1 + r) ** meses) - 1)
 
 if st.button("Analizar si está Barato, Correcto o Caro", type="primary", use_container_width=True):
     # 1. Cálculo de edad exacta
@@ -227,11 +240,11 @@ if st.button("Analizar si está Barato, Correcto o Caro", type="primary", use_co
     m2.metric("Precio al Contado", f"{formato_es(precio_contado)} €")
     m3.metric("Desviación de Mercado", f"{variacion_pct:+.1f}%".replace(".", ","))
     
-    # --- RESULTADOS DE FINANCIACIÓN ---
+    # --- RESULTADOS DE FINANCIACIÓN DEL CONCESIONARIO ---
     if tiene_financiacion and precio_financiado_total > 0:
         sobrecoste_financiacion = precio_financiado_total - precio_contado
         st.markdown("---")
-        st.markdown("### 💳 Análisis de la Financiación")
+        st.markdown("### 💳 Análisis de la Financiación de la Oferta")
         
         if cuota_mensual > 0 and num_cuotas > 0:
             f1, f2, f3, f4, f5 = st.columns(5)
@@ -247,7 +260,37 @@ if st.button("Analizar si está Barato, Correcto o Caro", type="primary", use_co
             col_f3.metric("Sobrecoste Intereses", f"+ {formato_es(sobrecoste_financiacion)} €", delta_color="inverse")
         
         if sobrecoste_financiacion > 2000:
-            st.warning(f"⚠️ **Aviso de Financiación:** Al financiar con un TIN del {tin_pct:.2f}% pagas **{formato_es(sobrecoste_financiacion)} € más** que al contado. Comprueba si los descuentos de la oferta compensan este sobrecoste. Recomendamos probar a contratarlo con tu banco o con otra entidad que cobre menos intereses.")
+            st.warning(f"⚠️ **Aviso de Financiación:** Al financiar con la oferta de la marca (TIN {tin_pct:.2f}%) pagas **{formato_es(sobrecoste_financiacion)} € más** que al contado.")
+
+        # =========================================================================
+        # --- NUEVA SECCIÓN: RECOMENDADOR DE ENTIDADES BANCARIAS ALTERNATIVAS ---
+        # =========================================================================
+        st.markdown("---")
+        st.markdown("### 🏦 Alternativas Recomendadas: Pide el préstamo en tu banco y compra al contado")
+        st.info("💡 **Consejo:** Si compras el coche al precio al contado y financias esa misma cantidad a través de un préstamo personal en una de estas entidades, puedes ahorrarte miles de euros en intereses:")
+
+        # Monto a financiar: el precio al contado menos la entrada que ponga el usuario
+        capital_a_financiar = max(1000.0, precio_contado - entrada_dinero)
+        plazo_meses_simulacion = num_cuotas if num_cuotas > 0 else 60
+
+        filas_comparativa = []
+        for ent in ENTIDADES_FINANCIERAS:
+            c_mensual = calcular_cuota_francesa(capital_a_financiar, ent["tin"], plazo_meses_simulacion)
+            total_pagado = entrada_dinero + (c_mensual * plazo_meses_simulacion)
+            ahorro_vs_concesionario = precio_financiado_total - total_pagado
+            
+            filas_comparativa.append({
+                "Entidad Financiera": ent["entidad"],
+                "TIN (%)": f"{ent['tin']:.2f}%".replace(".", ","),
+                "Cuota Est. (€/mes)": f"{formato_es(c_mensual)} €",
+                "Total Pagado (€)": f"{formato_es(total_pagado)} €",
+                "Ahorro estimado vs Oferta (€)": f"🟢 {formato_es(ahorro_vs_concesionario)} €" if ahorro_vs_concesionario > 0 else f"{formato_es(ahorro_vs_concesionario)} €",
+                "Puntos Fuertes": ent["destacado"]
+            })
+
+        import pandas as pd
+        df_comparativa = pd.DataFrame(filas_comparativa)
+        st.dataframe(df_comparativa, use_container_width=True)
 
     st.markdown(f"#### Veredicto: {estado}")
     st.info(f"**Justificación:** {detalle}")

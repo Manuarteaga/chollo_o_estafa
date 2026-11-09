@@ -27,7 +27,7 @@ col_m1, col_m2 = st.columns(2)
 
 with col_m1:
     # --- SELECCIÓN DE MARCA ---
-    opciones_marcas = ["-- Selecciona o escribe abajo --"] + sorted(list(BASE_DATOS_COCHES.keys()))
+    opciones_marcas = ["-- Selecciona o escribe abajo --"] + sorted(list(BASE_MARCAS_MODELOS.keys()))
     marca_sel = st.selectbox("Marca del Vehículo", options=opciones_marcas)
     marca_man = st.text_input("¿Otra marca? Escríbela aquí:", value="").strip()
     

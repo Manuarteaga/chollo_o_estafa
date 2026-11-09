@@ -5,8 +5,8 @@ st.set_page_config(page_title="Analizador Inteligente de Coches de Ocasión", la
 
 st.title("🚗 Analizador Inteligente de Precios de Coches de Ocasión")
 
-# Base de datos simplificada de marcas y sus modelos más comunes
-BASE_MARCAS_MODELOS = {
+# Base de datos ampliada con precios orientativos de nuevo y datos técnicos base
+BASE_DATOS_COCHES = {
     "Toyota": ["Yaris", "Corolla", "C-HR", "RAV4", "Camry"],
     "Honda": ["Civic", "HR-V", "CR-V", "Jazz"],
     "Volkswagen": ["Polo", "Golf", "T-Roc", "Tiguan", "Passat"],
@@ -19,7 +19,7 @@ BASE_MARCAS_MODELOS = {
     "BMW": ["Serie 1", "Serie 3", "Serie 5", "X1", "X3", "X5"],
     "Mercedes-Benz": ["Clase A", "Clase C", "Clase E", "GLA", "GLC"],
     "Audi": ["A3", "A4", "A6", "Q3", "Q5"]
-    }
+}
 
 st.markdown("### 📋 Datos del Vehículo y Financiación")
 
@@ -27,14 +27,14 @@ col_m1, col_m2 = st.columns(2)
 
 with col_m1:
     # --- SELECCIÓN DE MARCA ---
-    opciones_marcas = ["-- Selecciona o escribe abajo --"] + sorted(list(BASE_MARCAS_MODELOS.keys()))
+    opciones_marcas = ["-- Selecciona o escribe abajo --"] + sorted(list(BASE_DATOS_COCHES.keys()))
     marca_sel = st.selectbox("Marca del Vehículo", options=opciones_marcas)
     marca_man = st.text_input("¿Otra marca? Escríbela aquí:", value="").strip()
     
     marca_final = marca_man.strip().title() if marca_man else (marca_sel if not marca_sel.startswith("--") else "Marca no especificada")
 
     # --- SELECCIÓN DE MODELO ---
-    modelos_disponibles = list(BASE_MARCAS_MODELOS.get(marca_final, {}).keys())
+    modelos_disponibles = list(BASE_DATOS_COCHES.get(marca_final, {}).keys())
     opciones_modelos = ["-- Selecciona o escribe abajo --"] + modelos_disponibles
     
     modelo_sel = st.selectbox("Modelo del Vehículo", options=opciones_modelos)
@@ -48,8 +48,8 @@ with col_m1:
     combustible_sugerido = "Gasolina"
     transmision_sugerida = "Manual"
 
-    if marca_final in BASE_MARCAS_MODELOS and modelo_final in BASE_MARCAS_MODELOS[marca_final]:
-        datos_auto = BASE_MARCAS_MODELOS[marca_final][modelo_final]
+    if marca_final in BASE_DATOS_COCHES and modelo_final in BASE_DATOS_COCHES[marca_final]:
+        datos_auto = BASE_DATOS_COCHES[marca_final][modelo_final]
         precio_sugerido = float(datos_auto["precio_nuevo"])
         potencia_sugerida = int(datos_auto["potencia"])
         combustible_sugerido = datos_auto["combustible"]

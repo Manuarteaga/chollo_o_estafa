@@ -94,11 +94,11 @@ BASE_DATOS_COCHES = {
 
 # Catálogo de entidades bancarias/financieras alternativas con sus condiciones de mercado
 ENTIDADES_FINANCIERAS = [
-    {"entidad": "ING (Préstamo Naranja Coches)", "tin": 5.49, "comision_apertura": 0.0, "destacado": "Sin comisiones y 100% online"},
-    {"entidad": "BBVA (Préstamo Coche Online)", "tin": 5.95, "comision_apertura": 0.0, "destacado": "Respuesta rápida para clientes y no clientes"},
-    {"entidad": "Openbank (Préstamo Personal)", "tin": 4.95, "comision_apertura": 0.0, "destacado": "El interés más bajo si domicilias nómina"},
-    {"entidad": "Banco Santander (Préstamo Coche)", "tin": 6.25, "comision_apertura": 1.0, "destacado": "Financiación flexible hasta 8 años"},
-    {"entidad": "Younited Credit", "tin": 5.75, "comision_apertura": 0.0, "destacado": "Plataforma 100% digital rápida"}
+    {"entidad": "ING (Préstamo Naranja Coches)", "tin": 5.49, "destacado": "Sin comisiones y 100% online"},
+    {"entidad": "BBVA (Préstamo Coche Online)", "tin": 5.95, "destacado": "Respuesta rápida para clientes y no clientes"},
+    {"entidad": "Openbank (Préstamo Personal)", "tin": 4.95, "destacado": "El interés más bajo si domicilias nómina"},
+    {"entidad": "Banco Santander (Préstamo Coche)", "tin": 6.25, "destacado": "Financiación flexible hasta 8 años"},
+    {"entidad": "Younited Credit", "tin": 5.75, "destacado": "Plataforma 100% digital rápida"}
 ]
 
 st.markdown("### 📋 Datos del Vehículo y Financiación")
@@ -166,7 +166,7 @@ with col_m2:
     tin_pct = 0.0
 
     if tiene_financiacion:
-        st.markdown("##### 💳 Opciones de Financiación del Concesionario")
+        st.markdown("##### 💳 Opciones de Financiación del Concesionario (Coche Usado)")
         
         precio_financiado_total = st.number_input("Precio Total Financiado (si lo sabes directo) (€)", min_value=0.0, value=16800.0, step=500.0, format="%.2f")
         
@@ -244,7 +244,7 @@ if st.button("Analizar si está Barato, Correcto o Caro", type="primary", use_co
     if tiene_financiacion and precio_financiado_total > 0:
         sobrecoste_financiacion = precio_financiado_total - precio_contado
         st.markdown("---")
-        st.markdown("### 💳 Análisis de la Financiación de la Oferta")
+        st.markdown("### 💳 Análisis de la Financiación de la Oferta (Coche Usado)")
         
         if cuota_mensual > 0 and num_cuotas > 0:
             f1, f2, f3, f4, f5 = st.columns(5)
@@ -263,29 +263,47 @@ if st.button("Analizar si está Barato, Correcto o Caro", type="primary", use_co
             st.warning(f"⚠️ **Aviso de Financiación:** Al financiar con la oferta de la marca (TIN {tin_pct:.2f}%) pagas **{formato_es(sobrecoste_financiacion)} € más** que al contado.")
 
         # =========================================================================
-        # --- NUEVA SECCIÓN: RECOMENDADOR DE ENTIDADES BANCARIAS ALTERNATIVAS ---
+        # --- TABLA COMPARATIVA CON BANCAS Y OPCIÓN DE COCHE NUEVO FINANCIADO ---
         # =========================================================================
         st.markdown("---")
-        st.markdown("### 🏦 Alternativas Recomendadas: Pide el préstamo en tu banco y compra al contado")
-        st.info("💡 **Consejo:** Si compras el coche al precio al contado y financias esa misma cantidad a través de un préstamo personal en una de estas entidades, puedes ahorrarte miles de euros en intereses:")
+        st.markdown("### 🏦 Alternativas de Financiación y Comparativa de Coste Total")
+        st.info("💡 **Comparativa de Opciones:** A continuación ves el coste total de financiar este coche con bancos tradicionales frente al coste de comprar el vehículo **NUEVO A ESTRENAR** con la financiera oficial de la marca:")
 
-        # Monto a financiar: el precio al contado menos la entrada que ponga el usuario
-        capital_a_financiar = max(1000.0, precio_contado - entrada_dinero)
+        capital_a_financiar_usado = max(1000.0, precio_contado - entrada_dinero)
         plazo_meses_simulacion = num_cuotas if num_cuotas > 0 else 60
+        tin_ref_marca = tin_pct if tin_pct > 0 else 6.99
 
         filas_comparativa = []
+
+        # 1. Opción Coche Nuevo con Financiera de Marca
+        # Asumimos precio_nuevo menos la entrada introducida, con el TIN medio oficial de marca
+        capital_a_financiar_nuevo = max(1000.0, precio_nuevo - entrada_dinero)
+        cuota_nuevo = calcular_cuota_francesa(capital_a_financiar_nuevo, tin_ref_marca, plazo_meses_simulacion)
+        total_pagado_nuevo = entrada_dinero + (cuota_nuevo * plazo_meses_simulacion)
+        diferencia_nuevo_vs_usado = total_pagado_nuevo - precio_financiado_total
+
+        filas_comparativa.append({
+            "Opción / Entidad": f"✨ COCHE NUEVO ({marca_final} {modelo_final})",
+            "TIN (%)": f"{tin_ref_marca:.2f}%".replace(".", ","),
+            "Cuota Est. (€/mes)": f"{formato_es(cuota_nuevo)} €",
+            "Total Pagado (€)": f"{formato_es(total_pagado_nuevo)} €",
+            "Diferencia vs Oferta Usado (€)": f"+ {formato_es(diferencia_nuevo_vs_usado)} € (Coche a estrenar)",
+            "Detalle de la Alternativa": f"Precio nuevo oficial de {formato_es(precio_nuevo)} € financiado con la marca"
+        })
+
+        # 2. Entidades Bancarias Personales
         for ent in ENTIDADES_FINANCIERAS:
-            c_mensual = calcular_cuota_francesa(capital_a_financiar, ent["tin"], plazo_meses_simulacion)
+            c_mensual = calcular_cuota_francesa(capital_a_financiar_usado, ent["tin"], plazo_meses_simulacion)
             total_pagado = entrada_dinero + (c_mensual * plazo_meses_simulacion)
             ahorro_vs_concesionario = precio_financiado_total - total_pagado
             
             filas_comparativa.append({
-                "Entidad Financiera": ent["entidad"],
+                "Opción / Entidad": ent["entidad"],
                 "TIN (%)": f"{ent['tin']:.2f}%".replace(".", ","),
                 "Cuota Est. (€/mes)": f"{formato_es(c_mensual)} €",
                 "Total Pagado (€)": f"{formato_es(total_pagado)} €",
-                "Ahorro estimado vs Oferta (€)": f"🟢 {formato_es(ahorro_vs_concesionario)} €" if ahorro_vs_concesionario > 0 else f"{formato_es(ahorro_vs_concesionario)} €",
-                "Puntos Fuertes": ent["destacado"]
+                "Diferencia vs Oferta Usado (€)": f"🟢 Ahorras {formato_es(ahorro_vs_concesionario)} €" if ahorro_vs_concesionario > 0 else f"{formato_es(ahorro_vs_concesionario)} €",
+                "Detalle de la Alternativa": ent["destacado"]
             })
 
         import pandas as pd

@@ -34,7 +34,7 @@ with col_m1:
     marca_final = marca_man.strip().title() if marca_man else (marca_sel if not marca_sel.startswith("--") else "Marca no especificada")
 
     # --- SELECCIÓN DE MODELO ---
-    modelos_disponibles = list(BASE_DATOS_COCHES.get(marca_final, {}).keys())
+    modelos_disponibles = list(BASE_MARCAS_MODELOS.get(marca_final, {}).keys())
     opciones_modelos = ["-- Selecciona o escribe abajo --"] + modelos_disponibles
     
     modelo_sel = st.selectbox("Modelo del Vehículo", options=opciones_modelos)

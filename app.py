@@ -5,25 +5,20 @@ st.set_page_config(page_title="Analizador Inteligente de Coches de Ocasión", la
 
 st.title("🚗 Analizador Inteligente de Precios de Coches de Ocasión")
 
-# Base de datos ampliada con precios orientativos de nuevo y datos técnicos base
-BASE_DATOS_COCHES = {
-    "Toyota": {
-        "Yaris": {"precio_nuevo": 21500, "potencia": 116, "combustible": "Híbrido", "transmisión": "Automática"},
-        "Corolla": {"precio_nuevo": 26000, "potencia": 140, "combustible": "Híbrido", "transmisión": "Automática"},
-        "C-HR": {"precio_nuevo": 31000, "potencia": 140, "combustible": "Híbrido", "transmisión": "Automática"},
-        "RAV4": {"precio_nuevo": 39000, "potencia": 218, "combustible": "Híbrido", "transmisión": "Automática"}
-    },
-    "Seat": {
-        "Ibiza": {"precio_nuevo": 19000, "potencia": 95, "combustible": "Gasolina", "transmisión": "Manual"},
-        "Leon": {"precio_nuevo": 24500, "potencia": 110, "combustible": "Gasolina", "transmisión": "Manual"},
-        "Arona": {"precio_nuevo": 22000, "potencia": 110, "combustible": "Gasolina", "transmisión": "Manual"},
-        "Ateca": {"precio_nuevo": 28000, "potencia": 150, "combustible": "Gasolina", "transmisión": "Automática"}
-    },
-    "Volkswagen": {
-        "Polo": {"precio_nuevo": 21000, "potencia": 95, "combustible": "Gasolina", "transmisión": "Manual"},
-        "Golf": {"precio_nuevo": 31000, "potencia": 130, "combustible": "Gasolina", "transmisión": "Manual"},
-        "T-Roc": {"precio_nuevo": 28000, "potencia": 115, "combustible": "Gasolina", "transmisión": "Manual"},
-        "Tiguan": {"precio_nuevo": 38000, "potencia": 150, "combustible": "Diésel", "transmisión": "Automática"}
+# Base de datos simplificada de marcas y sus modelos más comunes
+BASE_MARCAS_MODELOS = {
+    "Toyota": ["Yaris", "Corolla", "C-HR", "RAV4", "Camry"],
+    "Honda": ["Civic", "HR-V", "CR-V", "Jazz"],
+    "Volkswagen": ["Polo", "Golf", "T-Roc", "Tiguan", "Passat"],
+    "Seat": ["Ibiza", "Leon", "Arona", "Ateca", "Tarraco"],
+    "Renault": ["Clio", "Captur", "Megane", "Austral", "Arkana"],
+    "Peugeot": ["208", "2008", "308", "3008", "5008"],
+    "Ford": ["Fiesta", "Focus", "Puma", "Kuga"],
+    "Hyundai": ["i20", "i30", "Kona", "Tucson", "Santa Fe"],
+    "Kia": ["Picanto", "Ceed", "Stonic", "Sportage", "Sorento"],
+    "BMW": ["Serie 1", "Serie 3", "Serie 5", "X1", "X3", "X5"],
+    "Mercedes-Benz": ["Clase A", "Clase C", "Clase E", "GLA", "GLC"],
+    "Audi": ["A3", "A4", "A6", "Q3", "Q5"]
     }
 }
 

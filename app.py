@@ -48,7 +48,7 @@ with col_m1:
     combustible_sugerido = "Gasolina"
     transmision_sugerida = "Manual"
 
-    if marca_final in BASE_DATOS_COCHES and modelo_final in BASE_DATOS_COCHES[marca_final]:
+    if marca_final in BASE_DATOS_COCHES and modelo_final in BASE_MARCAS_MODELOS[marca_final]:
         datos_auto = BASE_DATOS_COCHES[marca_final][modelo_final]
         precio_sugerido = float(datos_auto["precio_nuevo"])
         potencia_sugerida = int(datos_auto["potencia"])

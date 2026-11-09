@@ -147,13 +147,14 @@ with col_m2:
     
     precio_contado = st.number_input("Precio al Contado (€)", min_value=0.0, value=14500.0, step=500.0, format="%.2f")
     
-    # --- BLOQUE DE FINANCIACIÓN COMPLETO ---
+    # --- BLOQUE DE FINANCIACIÓN COMPLETO (CON TIN) ---
     tiene_financiacion = st.checkbox("¿Tiene opción o precio financiado?")
     
     precio_financiado_total = 0.0
     entrada_dinero = 0.0
     cuota_mensual = 0.0
     num_cuotas = 0
+    tin_pct = 0.0
 
     if tiene_financiacion:
         st.markdown("##### 💳 Opciones de Financiación")
@@ -163,19 +164,18 @@ with col_m2:
         
         st.markdown("<p style='text-align: center; color: gray; margin: 0;'>— O desglósalo aquí abajo —</p>", unsafe_allow_html=True)
         
-        # 2. Desglose detallado por si prefieres calcularlo o ver las cuotas
-        col_f1, col_f2, col_f3 = st.columns(3)
+        # 2. Desglose detallado por cuotas, entrada y TIN
+        col_f1, col_f2 = st.columns(2)
         with col_f1:
             entrada_dinero = st.number_input("Entrada (€)", min_value=0.0, value=3000.0, step=500.0, format="%.2f")
-        with col_f2:
             cuota_mensual = st.number_input("Cuota (€/mes)", min_value=0.0, value=230.0, step=10.0, format="%.2f")
-        with col_f3:
+        with col_f2:
             num_cuotas = st.number_input("Nº Cuotas (meses)", min_value=0, max_value=120, value=60, step=6)
+            tin_pct = st.number_input("Tipo de Interés TIN (%)", min_value=0.0, max_value=30.0, value=8.5, step=0.25, format="%.2f")
         
-        # Si se rellenan las cuotas, calculamos o priorizamos el total desglosado
+        # Si se rellenan las cuotas, calculamos el total desglosado
         if cuota_mensual > 0 and num_cuotas > 0:
             calculo_desglose = entrada_dinero + (cuota_mensual * num_cuotas)
-            # Si el usuario no modificó el total o quiere usar el desglose:
             precio_financiado_total = calculo_desglose
 
     etiqueta_dgt = st.selectbox("Etiqueta Ambiental DGT", ["ECO / Cero", "C", "B", "Sin Etiqueta"])
@@ -234,18 +234,20 @@ if st.button("Analizar si está Barato, Correcto o Caro", type="primary", use_co
         st.markdown("### 💳 Análisis de la Financiación")
         
         if cuota_mensual > 0 and num_cuotas > 0:
-            f1, f2, f3, f4 = st.columns(4)
+            f1, f2, f3, f4, f5 = st.columns(5)
             f1.metric("Entrada Inicial", f"{formato_es(entrada_dinero)} €")
             f2.metric("Cuota Mensual", f"{formato_es(cuota_mensual)} € / mes", delta=f"{num_cuotas} meses", delta_color="off")
-            f3.metric("Total Financiado", f"{formato_es(precio_financiado_total)} €")
-            f4.metric("Sobrecoste (Intereses/Comisiones)", f"+ {formato_es(sobrecoste_financiacion)} €", delta_color="inverse")
+            f3.metric("TIN Aplicado", f"{tin_pct:.2f}%".replace(".", ","))
+            f4.metric("Total Financiado", f"{formato_es(precio_financiado_total)} €")
+            f5.metric("Sobrecoste Intereses", f"+ {formato_es(sobrecoste_financiacion)} €", delta_color="inverse")
         else:
-            col_f1, col_f2 = st.columns(2)
+            col_f1, col_f2, col_f3 = st.columns(3)
             col_f1.metric("Precio Total Financiado", f"{formato_es(precio_financiado_total)} €")
-            col_f2.metric("Sobrecoste (Intereses/Comisiones)", f"+ {formato_es(sobrecoste_financiacion)} €", delta_color="inverse")
+            col_f2.metric("TIN Aplicado", f"{tin_pct:.2f}%".replace(".", ","))
+            col_f3.metric("Sobrecoste Intereses", f"+ {formato_es(sobrecoste_financiacion)} €", delta_color="inverse")
         
         if sobrecoste_financiacion > 2000:
-            st.warning(f"⚠️ **Aviso de Financiación:** Al financiar pagas **{formato_es(sobrecoste_financiacion)} € más** que al contado. Comprueba si los descuentos de la oferta compensan los intereses totales.")
+            st.warning(f"⚠️ **Aviso de Financiación:** Al financiar con un TIN del {tin_pct:.2f}% pagas **{formato_es(sobrecoste_financiacion)} € más** que al contado. Comprueba si los descuentos de la oferta compensan este sobrecoste.")
 
     st.markdown(f"#### Veredicto: {estado}")
     st.info(f"**Justificación:** {detalle}")

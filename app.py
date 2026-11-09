@@ -20,7 +20,6 @@ BASE_MARCAS_MODELOS = {
     "Mercedes-Benz": ["Clase A", "Clase C", "Clase E", "GLA", "GLC"],
     "Audi": ["A3", "A4", "A6", "Q3", "Q5"]
     }
-}
 
 st.markdown("### 📋 Datos del Vehículo y Financiación")
 

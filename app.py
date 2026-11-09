@@ -149,7 +149,7 @@ with col_m2:
     
     # --- BLOQUE DE FINANCIACIÓN DESGLOSADO ---
     tiene_financiacion = st.checkbox("¿Tiene opción o precio financiado?")
-    
+    precio_financiado = 0.0
     entrada_dinero = 0.0
     cuota_mensual = 0.0
     num_cuotas = 0

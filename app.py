@@ -247,7 +247,7 @@ if st.button("Analizar si está Barato, Correcto o Caro", type="primary", use_co
             col_f3.metric("Sobrecoste Intereses", f"+ {formato_es(sobrecoste_financiacion)} €", delta_color="inverse")
         
         if sobrecoste_financiacion > 2000:
-            st.warning(f"⚠️ **Aviso de Financiación:** Al financiar con un TIN del {tin_pct:.2f}% pagas **{formato_es(sobrecoste_financiacion)} € más** que al contado. Comprueba si los descuentos de la oferta compensan este sobrecoste.")
+            st.warning(f"⚠️ **Aviso de Financiación:** Al financiar con un TIN del {tin_pct:.2f}% pagas **{formato_es(sobrecoste_financiacion)} € más** que al contado. Comprueba si los descuentos de la oferta compensan este sobrecoste. Recomendamos probar a contratarlo con tu banco o con otra entidad que cobre menos intereses.")
 
     st.markdown(f"#### Veredicto: {estado}")
     st.info(f"**Justificación:** {detalle}")

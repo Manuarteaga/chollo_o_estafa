@@ -1,24 +1,95 @@
 import streamlit as st
 import datetime
 
-st.set_page_config(page_title="Analizador Inteligente de Coches de Ocasión", layout="wide")
+st.set_page_config(page_title="Analizador Inteligente de Precios de Coches de Ocasión", layout="wide")
 
 st.title("🚗 Analizador Inteligente de Precios de Coches de Ocasión")
 
-# Base de datos ampliada con precios orientativos de nuevo y datos técnicos base
+# Base de datos completa con marcas, modelos y especificaciones técnicas orientativas
 BASE_DATOS_COCHES = {
-    "Toyota": ["Yaris", "Corolla", "C-HR", "RAV4", "Camry"],
-    "Honda": ["Civic", "HR-V", "CR-V", "Jazz"],
-    "Volkswagen": ["Polo", "Golf", "T-Roc", "Tiguan", "Passat"],
-    "Seat": ["Ibiza", "Leon", "Arona", "Ateca", "Tarraco"],
-    "Renault": ["Clio", "Captur", "Megane", "Austral", "Arkana"],
-    "Peugeot": ["208", "2008", "308", "3008", "5008"],
-    "Ford": ["Fiesta", "Focus", "Puma", "Kuga"],
-    "Hyundai": ["i20", "i30", "Kona", "Tucson", "Santa Fe"],
-    "Kia": ["Picanto", "Ceed", "Stonic", "Sportage", "Sorento"],
-    "BMW": ["Serie 1", "Serie 3", "Serie 5", "X1", "X3", "X5"],
-    "Mercedes-Benz": ["Clase A", "Clase C", "Clase E", "GLA", "GLC"],
-    "Audi": ["A3", "A4", "A6", "Q3", "Q5"]
+    "Toyota": {
+        "Yaris": {"precio_nuevo": 21500, "potencia": 116, "combustible": "Híbrido", "transmisión": "Automática"},
+        "Corolla": {"precio_nuevo": 26000, "potencia": 140, "combustible": "Híbrido", "transmisión": "Automática"},
+        "C-HR": {"precio_nuevo": 31000, "potencia": 140, "combustible": "Híbrido", "transmisión": "Automática"},
+        "RAV4": {"precio_nuevo": 39000, "potencia": 218, "combustible": "Híbrido", "transmisión": "Automática"},
+        "Camry": {"precio_nuevo": 42000, "potencia": 218, "combustible": "Híbrido", "transmisión": "Automática"}
+    },
+    "Honda": {
+        "Civic": {"precio_nuevo": 32000, "potencia": 184, "combustible": "Híbrido", "transmisión": "Automática"},
+        "HR-V": {"precio_nuevo": 33000, "potencia": 131, "combustible": "Híbrido", "transmisión": "Automática"},
+        "CR-V": {"precio_nuevo": 42000, "potencia": 184, "combustible": "Híbrido", "transmisión": "Automática"},
+        "Jazz": {"precio_nuevo": 24000, "potencia": 109, "combustible": "Híbrido", "transmisión": "Automática"}
+    },
+    "Volkswagen": {
+        "Polo": {"precio_nuevo": 21000, "potencia": 95, "combustible": "Gasolina", "transmisión": "Manual"},
+        "Golf": {"precio_nuevo": 31000, "potencia": 130, "combustible": "Gasolina", "transmisión": "Manual"},
+        "T-Roc": {"precio_nuevo": 28000, "potencia": 115, "combustible": "Gasolina", "transmisión": "Manual"},
+        "Tiguan": {"precio_nuevo": 38000, "potencia": 150, "combustible": "Diésel", "transmisión": "Automática"},
+        "Passat": {"precio_nuevo": 40000, "potencia": 150, "combustible": "Diésel", "transmisión": "Automática"}
+    },
+    "Seat": {
+        "Ibiza": {"precio_nuevo": 19000, "potencia": 95, "combustible": "Gasolina", "transmisión": "Manual"},
+        "Leon": {"precio_nuevo": 24500, "potencia": 110, "combustible": "Gasolina", "transmisión": "Manual"},
+        "Arona": {"precio_nuevo": 22000, "potencia": 110, "combustible": "Gasolina", "transmisión": "Manual"},
+        "Ateca": {"precio_nuevo": 28000, "potencia": 150, "combustible": "Gasolina", "transmisión": "Automática"},
+        "Tarraco": {"precio_nuevo": 35000, "potencia": 150, "combustible": "Diésel", "transmisión": "Automática"}
+    },
+    "Renault": {
+        "Clio": {"precio_nuevo": 18000, "potencia": 90, "combustible": "Gasolina", "transmisión": "Manual"},
+        "Captur": {"precio_nuevo": 23000, "potencia": 100, "combustible": "Gasolina", "transmisión": "Manual"},
+        "Megane": {"precio_nuevo": 26000, "potencia": 140, "combustible": "Híbrido", "transmisión": "Automática"},
+        "Austral": {"precio_nuevo": 32000, "potencia": 200, "combustible": "Híbrido", "transmisión": "Automática"},
+        "Arkana": {"precio_nuevo": 29000, "potencia": 145, "combustible": "Híbrido", "transmisión": "Automática"}
+    },
+    "Peugeot": {
+        "208": {"precio_nuevo": 18500, "potencia": 100, "combustible": "Gasolina", "transmisión": "Manual"},
+        "2008": {"precio_nuevo": 24000, "potencia": 130, "combustible": "Gasolina", "transmisión": "Automática"},
+        "308": {"precio_nuevo": 26000, "potencia": 130, "combustible": "Gasolina", "transmisión": "Manual"},
+        "3008": {"precio_nuevo": 33000, "potencia": 130, "combustible": "Diésel", "transmisión": "Automática"},
+        "5008": {"precio_nuevo": 38000, "potencia": 130, "combustible": "Diésel", "transmisión": "Automática"}
+    },
+    "Ford": {
+        "Fiesta": {"precio_nuevo": 18000, "potencia": 95, "combustible": "Gasolina", "transmisión": "Manual"},
+        "Focus": {"precio_nuevo": 26000, "potencia": 125, "combustible": "Gasolina", "transmisión": "Manual"},
+        "Puma": {"precio_nuevo": 24000, "potencia": 125, "combustible": "Híbrido", "transmisión": "Manual"},
+        "Kuga": {"precio_nuevo": 32000, "potencia": 150, "combustible": "Híbrido", "transmisión": "Automática"}
+    },
+    "Hyundai": {
+        "i20": {"precio_nuevo": 17500, "potencia": 100, "combustible": "Gasolina", "transmisión": "Manual"},
+        "i30": {"precio_nuevo": 23000, "potencia": 120, "combustible": "Gasolina", "transmisión": "Manual"},
+        "Kona": {"precio_nuevo": 25000, "potencia": 120, "combustible": "Gasolina", "transmisión": "Manual"},
+        "Tucson": {"precio_nuevo": 31000, "potencia": 150, "combustible": "Híbrido", "transmisión": "Automática"},
+        "Santa Fe": {"precio_nuevo": 45000, "potencia": 230, "combustible": "Híbrido", "transmisión": "Automática"}
+    },
+    "Kia": {
+        "Picanto": {"precio_nuevo": 14000, "potencia": 67, "combustible": "Gasolina", "transmisión": "Manual"},
+        "Ceed": {"precio_nuevo": 22000, "potencia": 120, "combustible": "Gasolina", "transmisión": "Manual"},
+        "Stonic": {"precio_nuevo": 21000, "potencia": 100, "combustible": "Gasolina", "transmisión": "Manual"},
+        "Sportage": {"precio_nuevo": 31000, "potencia": 150, "combustible": "Híbrido", "transmisión": "Automática"},
+        "Sorento": {"precio_nuevo": 44000, "potencia": 230, "combustible": "Híbrido", "transmisión": "Automática"}
+    },
+    "BMW": {
+        "Serie 1": {"precio_nuevo": 32000, "potencia": 136, "combustible": "Gasolina", "transmisión": "Automática"},
+        "Serie 3": {"precio_nuevo": 43000, "potencia": 184, "combustible": "Diésel", "transmisión": "Automática"},
+        "Serie 5": {"precio_nuevo": 58000, "potencia": 190, "combustible": "Diésel", "transmisión": "Automática"},
+        "X1": {"precio_nuevo": 39000, "potencia": 150, "combustible": "Diésel", "transmisión": "Automática"},
+        "X3": {"precio_nuevo": 54000, "potencia": 190, "combustible": "Híbrido", "transmisión": "Automática"},
+        "X5": {"precio_nuevo": 78000, "potencia": 286, "combustible": "Híbrido", "transmisión": "Automática"}
+    },
+    "Mercedes-Benz": {
+        "Clase A": {"precio_nuevo": 33000, "potencia": 136, "combustible": "Gasolina", "transmisión": "Automática"},
+        "Clase C": {"precio_nuevo": 47000, "potencia": 200, "combustible": "Híbrido", "transmisión": "Automática"},
+        "Clase E": {"precio_nuevo": 60000, "potencia": 197, "combustible": "Diésel", "transmisión": "Automática"},
+        "GLA": {"precio_nuevo": 40000, "potencia": 150, "combustible": "Diésel", "transmisión": "Automática"},
+        "GLC": {"precio_nuevo": 59000, "potencia": 197, "combustible": "Híbrido", "transmisión": "Automática"}
+    },
+    "Audi": {
+        "A3": {"precio_nuevo": 31000, "potencia": 116, "combustible": "Gasolina", "transmisión": "Manual"},
+        "A4": {"precio_nuevo": 42000, "potencia": 163, "combustible": "Diésel", "transmisión": "Automática"},
+        "A6": {"precio_nuevo": 57000, "potencia": 204, "combustible": "Diésel", "transmisión": "Automática"},
+        "Q3": {"precio_nuevo": 39000, "potencia": 150, "combustible": "Gasolina", "transmisión": "Automática"},
+        "Q5": {"precio_nuevo": 53000, "potencia": 204, "combustible": "Diésel", "transmisión": "Automática"}
+    }
 }
 
 st.markdown("### 📋 Datos del Vehículo y Financiación")
@@ -42,12 +113,13 @@ with col_m1:
     
     modelo_final = modelo_man.strip().title() if modelo_man else (modelo_sel if not modelo_sel.startswith("--") else "Modelo no especificado")
 
-    # Autocompletar precio nuevo y especificaciones si existe en la base de datos
+    # Valores por defecto por si no se encuentra en la base de datos
     precio_sugerido = 25000.0
     potencia_sugerida = 110
     combustible_sugerido = "Gasolina"
     transmision_sugerida = "Manual"
 
+    # Autocompletar si existe en la base de datos
     if marca_final in BASE_DATOS_COCHES and modelo_final in BASE_DATOS_COCHES[marca_final]:
         datos_auto = BASE_DATOS_COCHES[marca_final][modelo_final]
         precio_sugerido = float(datos_auto["precio_nuevo"])
@@ -57,14 +129,17 @@ with col_m1:
 
     precio_nuevo = st.number_input("Precio de Venta Nuevo Original (€)", min_value=0.0, value=precio_sugerido, step=500.0, format="%.2f")
     
-    # Nuevos campos técnicos solicitados
     col_t1, col_t2 = st.columns(2)
     with col_t1:
         potencia_cv = st.number_input("Potencia (CV)", min_value=30, max_value=1000, value=potencia_sugerida, step=5)
     with col_t2:
-        transmision = st.selectbox("Transmisión", ["Manual", "Automática"], index=0 if transmision_sugerida=="Manual" else 1)
+        lista_transmisiones = ["Manual", "Automática"]
+        idx_trans = lista_transmisiones.index(transmision_sugerida) if transmision_sugerida in lista_transmisiones else 0
+        transmision = st.selectbox("Transmisión", lista_transmisiones, index=idx_trans)
         
-    combustible = st.selectbox("Tipo de Combustión", ["Gasolina", "Diésel", "Híbrido", "Híbrido Enchufe (PHEV)", "Eléctrico (EV)", "GLP / GNC"], index=["Gasolina", "Diésel", "Híbrido", "Híbrido Enchufe (PHEV)", "Eléctrico (EV)", "GLP / GNC"].index(combustible_sugerido) if combustible_sugerido in ["Gasolina", "Diésel", "Híbrido", "Híbrido Enchufe (PHEV)", "Eléctrico (EV)", "GLP / GNC"] else 0)
+    lista_combustibles = ["Gasolina", "Diésel", "Híbrido", "Híbrido Enchufe (PHEV)", "Eléctrico (EV)", "GLP / GNC"]
+    idx_comb = lista_combustibles.index(combustible_sugerido) if combustible_sugerido in lista_combustibles else 0
+    combustible = st.selectbox("Tipo de Combustión", lista_combustibles, index=idx_comb)
 
 with col_m2:
     ano_matriculacion = st.number_input("Año de Matriculación", min_value=1980, max_value=datetime.datetime.now().year, value=2020, step=1)
@@ -72,7 +147,6 @@ with col_m2:
     
     precio_contado = st.number_input("Precio al Contado (€)", min_value=0.0, value=14500.0, step=500.0, format="%.2f")
     
-    # Opción de precio financiado
     tiene_financiacion = st.checkbox("¿Tiene opción o precio financiado?")
     precio_financiado = 0.0
     if tiene_financiacion:
@@ -91,10 +165,10 @@ if st.button("Analizar si está Barato, Correcto o Caro", type="primary", use_co
     ano_actual = datetime.datetime.now().year
     edad_anos = max(1, ano_actual - ano_matriculacion)
     
-    # 2. Curva de depreciación base (15% 1er año, 8% siguientes) + pequeño factor corrector por tipo de combustible
+    # 2. Curva de depreciación base + factor corrector por tipo de combustible
     corrector_combustible = 1.0
     if combustible in ["Híbrido", "Eléctrico (EV)", "Híbrido Enchufe (PHEV)"]:
-        corrector_combustible = 1.03  # Los ECO/Cero retienen un pelín mejor su valor
+        corrector_combustible = 1.03  
         
     valor_teorico = precio_nuevo * ((1 - 0.15) * ((1 - 0.08) ** (edad_anos - 1))) * corrector_combustible
     
@@ -127,7 +201,6 @@ if st.button("Analizar si está Barato, Correcto o Caro", type="primary", use_co
     m2.metric("Precio al Contado", f"{formato_es(precio_contado)} €")
     m3.metric("Desviación de Mercado", f"{variacion_pct:+.1f}%".replace(".", ","))
     
-    # Si financia, mostramos métrica extra del sobrecoste de la financiación
     if tiene_financiacion and precio_financiado > 0:
         sobrecoste_financiacion = precio_financiado - precio_contado
         st.markdown("---")

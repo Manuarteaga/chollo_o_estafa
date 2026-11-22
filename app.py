@@ -1,314 +1,309 @@
-import streamlit as st
 import datetime
+import pandas as pd
+import streamlit as st
+import streamlit.components.v1 as components
 
-st.set_page_config(page_title="Analizador Inteligente de Precios de Coches de Ocasión", layout="wide")
+st.set_page_config(
+    page_title="CholloScore | Analizador Inteligente de Coches de Ocasión",
+    page_icon="🚗",
+    layout="wide",
+)
 
-st.title("🚗 Analizador Inteligente de Precios de Coches de Ocasión")
+# Identidad visual oscura (Slate / Navy + esmeralda/cielo) alineada con PrimaScore
+st.markdown(
+    """
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
 
-# Base de datos completa con marcas, modelos y especificaciones técnicas orientativas
+        .stApp {
+            background-color: #090d16;
+            color: #f8fafc;
+            font-family: 'Inter', sans-serif;
+            background-image:
+                radial-gradient(at 0% 0%, rgba(16, 185, 129, 0.06) 0px, transparent 50%),
+                radial-gradient(at 100% 0%, rgba(56, 189, 248, 0.06) 0px, transparent 50%);
+        }
+        .block-container {
+            padding-top: 1rem;
+            padding-bottom: 2rem;
+            max-width: 1200px;
+        }
+        header[data-testid="stHeader"] {
+            display: none;
+        }
+        code, pre, [data-testid="stMetricValue"] {
+            font-family: 'JetBrains Mono', monospace;
+        }
+        .glass-panel {
+            background: rgba(15, 23, 42, 0.78);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(51, 65, 85, 0.65);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 18px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.35);
+        }
+        div[data-testid="stMetric"] {
+            background: rgba(9, 13, 22, 0.72);
+            border: 1px solid rgba(51, 65, 85, 0.75);
+            border-radius: 14px;
+            padding: 14px 16px;
+        }
+        div[data-testid="stMetricLabel"] > div {
+            color: #94a3b8;
+            font-size: 0.78rem;
+        }
+        div[data-testid="stMetricValue"] > div {
+            color: #f8fafc;
+            font-weight: 700;
+        }
+        .stButton > button[kind="primary"] {
+            background: linear-gradient(135deg, #10b981 0%, #0d9488 100%);
+            color: #090d16;
+            font-weight: 700;
+            border: none;
+            border-radius: 12px;
+            padding: 0.65rem 1.2rem;
+        }
+        .stButton > button[kind="primary"]:hover {
+            filter: brightness(1.08);
+        }
+    </style>
+    """,
+    unsafe_allow_html=True,
+)
+
+# Cabecera superior estilo PrimaScore
+st.markdown(
+    """
+    <div style="display:flex;justify-content:space-between;align-items:center;background:rgba(15,23,42,0.85);border:1px solid rgba(51,65,85,0.75);border-radius:14px;padding:14px 20px;margin-bottom:18px;">
+        <div style="display:flex;align-items:center;gap:12px;">
+            <div style="width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,#10b981,#0d9488);display:flex;align-items:center;justify-content:center;color:#090d16;font-weight:800;">
+                🚗
+            </div>
+            <div>
+                <div style="font-size:1.1rem;font-weight:700;color:#ffffff;">
+                    Chollo<span style="color:#34d399;">Score</span>
+                    <span style="margin-left:8px;font-size:0.68rem;font-family:'JetBrains Mono',monospace;text-transform:uppercase;padding:2px 8px;border-radius:999px;background:#1e293b;color:#94a3b8;border:1px solid #334155;">Coches de Ocasión</span>
+                </div>
+                <div style="font-size:0.8rem;color:#94a3b8;">Auditoría de precio al contado, depreciación y financiación</div>
+            </div>
+        </div>
+        <div style="display:inline-flex;align-items:center;gap:6px;padding:5px 11px;border-radius:999px;background:rgba(16,185,129,0.12);color:#34d399;border:1px solid rgba(16,185,129,0.25);font-size:0.75rem;font-family:'JetBrains Mono',monospace;">
+            <span style="width:7px;height:7px;border-radius:50%;background:#34d399;display:inline-block;"></span>
+            Auditor Activo
+        </div>
+    </div>
+    """,
+    unsafe_allow_html=True,
+)
+
+# Base de datos ampliada (incluye marcas chinas como BYD y Omoda + modelos actuales)
 BASE_DATOS_COCHES = {
-    "Toyota": {
-        "Yaris": {"precio_nuevo": 21500, "potencia": 116, "combustible": "Híbrido", "transmisión": "Automática"},
-        "Corolla": {"precio_nuevo": 26000, "potencia": 140, "combustible": "Híbrido", "transmisión": "Automática"},
-        "C-HR": {"precio_nuevo": 31000, "potencia": 140, "combustible": "Híbrido", "transmisión": "Automática"},
-        "RAV4": {"precio_nuevo": 39000, "potencia": 218, "combustible": "Híbrido", "transmisión": "Automática"},
-        "Camry": {"precio_nuevo": 42000, "potencia": 218, "combustible": "Híbrido", "transmisión": "Automática"}
-    },
-    "Honda": {
-        "Civic": {"precio_nuevo": 32000, "potencia": 184, "combustible": "Híbrido", "transmisión": "Automática"},
-        "HR-V": {"precio_nuevo": 33000, "potencia": 131, "combustible": "Híbrido", "transmisión": "Automática"},
-        "CR-V": {"precio_nuevo": 42000, "potencia": 184, "combustible": "Híbrido", "transmisión": "Automática"},
-        "Jazz": {"precio_nuevo": 24000, "potencia": 109, "combustible": "Híbrido", "transmisión": "Automática"}
-    },
-    "Volkswagen": {
-        "Polo": {"precio_nuevo": 21000, "potencia": 95, "combustible": "Gasolina", "transmisión": "Manual"},
-        "Golf": {"precio_nuevo": 31000, "potencia": 130, "combustible": "Gasolina", "transmisión": "Manual"},
-        "T-Roc": {"precio_nuevo": 28000, "potencia": 115, "combustible": "Gasolina", "transmisión": "Manual"},
-        "Tiguan": {"precio_nuevo": 38000, "potencia": 150, "combustible": "Diésel", "transmisión": "Automática"},
-        "Passat": {"precio_nuevo": 40000, "potencia": 150, "combustible": "Diésel", "transmisión": "Automática"}
-    },
-    "Seat": {
-        "Ibiza": {"precio_nuevo": 19000, "potencia": 95, "combustible": "Gasolina", "transmisión": "Manual"},
-        "Leon": {"precio_nuevo": 24500, "potencia": 110, "combustible": "Gasolina", "transmisión": "Manual"},
-        "Arona": {"precio_nuevo": 22000, "potencia": 110, "combustible": "Gasolina", "transmisión": "Manual"},
-        "Ateca": {"precio_nuevo": 28000, "potencia": 150, "combustible": "Gasolina", "transmisión": "Automática"},
-        "Tarraco": {"precio_nuevo": 35000, "potencia": 150, "combustible": "Diésel", "transmisión": "Automática"}
-    },
-    "Renault": {
-        "Clio": {"precio_nuevo": 18000, "potencia": 90, "combustible": "Gasolina", "transmisión": "Manual"},
-        "Captur": {"precio_nuevo": 23000, "potencia": 100, "combustible": "Gasolina", "transmisión": "Manual"},
-        "Megane": {"precio_nuevo": 26000, "potencia": 140, "combustible": "Híbrido", "transmisión": "Automática"},
-        "Austral": {"precio_nuevo": 32000, "potencia": 200, "combustible": "Híbrido", "transmisión": "Automática"},
-        "Arkana": {"precio_nuevo": 29000, "potencia": 145, "combustible": "Híbrido", "transmisión": "Automática"}
-    },
-    "Peugeot": {
-        "208": {"precio_nuevo": 18500, "potencia": 100, "combustible": "Gasolina", "transmisión": "Manual"},
-        "2008": {"precio_nuevo": 24000, "potencia": 130, "combustible": "Gasolina", "transmisión": "Automática"},
-        "308": {"precio_nuevo": 26000, "potencia": 130, "combustible": "Gasolina", "transmisión": "Manual"},
-        "3008": {"precio_nuevo": 33000, "potencia": 130, "combustible": "Diésel", "transmisión": "Automática"},
-        "5008": {"precio_nuevo": 38000, "potencia": 130, "combustible": "Diésel", "transmisión": "Automática"}
-    },
-    "Ford": {
-        "Fiesta": {"precio_nuevo": 18000, "potencia": 95, "combustible": "Gasolina", "transmisión": "Manual"},
-        "Focus": {"precio_nuevo": 26000, "potencia": 125, "combustible": "Gasolina", "transmisión": "Manual"},
-        "Puma": {"precio_nuevo": 24000, "potencia": 125, "combustible": "Híbrido", "transmisión": "Manual"},
-        "Kuga": {"precio_nuevo": 32000, "potencia": 150, "combustible": "Híbrido", "transmisión": "Automática"}
-    },
-    "Hyundai": {
-        "i20": {"precio_nuevo": 17500, "potencia": 100, "combustible": "Gasolina", "transmisión": "Manual"},
-        "i30": {"precio_nuevo": 23000, "potencia": 120, "combustible": "Gasolina", "transmisión": "Manual"},
-        "Kona": {"precio_nuevo": 25000, "potencia": 120, "combustible": "Gasolina", "transmisión": "Manual"},
-        "Tucson": {"precio_nuevo": 31000, "potencia": 150, "combustible": "Híbrido", "transmisión": "Automática"},
-        "Santa Fe": {"precio_nuevo": 45000, "potencia": 230, "combustible": "Híbrido", "transmisión": "Automática"}
-    },
-    "Kia": {
-        "Picanto": {"precio_nuevo": 14000, "potencia": 67, "combustible": "Gasolina", "transmisión": "Manual"},
-        "Ceed": {"precio_nuevo": 22000, "potencia": 120, "combustible": "Gasolina", "transmisión": "Manual"},
-        "Stonic": {"precio_nuevo": 21000, "potencia": 100, "combustible": "Gasolina", "transmisión": "Manual"},
-        "Sportage": {"precio_nuevo": 31000, "potencia": 150, "combustible": "Híbrido", "transmisión": "Automática"},
-        "Sorento": {"precio_nuevo": 44000, "potencia": 230, "combustible": "Híbrido", "transmisión": "Automática"}
+    "Audi": {
+        "A1": {"precio_nuevo": 24500, "potencia": 110, "combustible": "Gasolina", "transmisión": "Manual"},
+        "A3": {"precio_nuevo": 31000, "potencia": 116, "combustible": "Gasolina", "transmisión": "Manual"},
+        "A4": {"precio_nuevo": 42000, "potencia": 163, "combustible": "Diésel", "transmisión": "Automática"},
+        "A5": {"precio_nuevo": 52000, "potencia": 204, "combustible": "Híbrido", "transmisión": "Automática"},
+        "A6": {"precio_nuevo": 57000, "potencia": 204, "combustible": "Diésel", "transmisión": "Automática"},
+        "Q2": {"precio_nuevo": 29500, "potencia": 116, "combustible": "Gasolina", "transmisión": "Manual"},
+        "Q3": {"precio_nuevo": 39000, "potencia": 150, "combustible": "Gasolina", "transmisión": "Automática"},
+        "Q5": {"precio_nuevo": 53000, "potencia": 204, "combustible": "Diésel", "transmisión": "Automática"},
     },
     "BMW": {
         "Serie 1": {"precio_nuevo": 32000, "potencia": 136, "combustible": "Gasolina", "transmisión": "Automática"},
+        "Serie 2": {"precio_nuevo": 36500, "potencia": 156, "combustible": "Gasolina", "transmisión": "Automática"},
         "Serie 3": {"precio_nuevo": 43000, "potencia": 184, "combustible": "Diésel", "transmisión": "Automática"},
         "Serie 5": {"precio_nuevo": 58000, "potencia": 190, "combustible": "Diésel", "transmisión": "Automática"},
         "X1": {"precio_nuevo": 39000, "potencia": 150, "combustible": "Diésel", "transmisión": "Automática"},
         "X3": {"precio_nuevo": 54000, "potencia": 190, "combustible": "Híbrido", "transmisión": "Automática"},
-        "X5": {"precio_nuevo": 78000, "potencia": 286, "combustible": "Híbrido", "transmisión": "Automática"}
+        "X5": {"precio_nuevo": 78000, "potencia": 286, "combustible": "Híbrido", "transmisión": "Automática"},
+        "iX1": {"precio_nuevo": 48500, "potencia": 204, "combustible": "Eléctrico (EV)", "transmisión": "Automática"},
+    },
+    "BYD": {
+        "Dolphin": {"precio_nuevo": 30500, "potencia": 177, "combustible": "Eléctrico (EV)", "transmisión": "Automática"},
+        "Dolphin Surf": {"precio_nuevo": 19990, "potencia": 88, "combustible": "Eléctrico (EV)", "transmisión": "Automática"},
+        "Atto 2": {"precio_nuevo": 29990, "potencia": 177, "combustible": "Eléctrico (EV)", "transmisión": "Automática"},
+        "Atto 3": {"precio_nuevo": 37990, "potencia": 204, "combustible": "Eléctrico (EV)", "transmisión": "Automática"},
+        "Seal": {"precio_nuevo": 46990, "potencia": 313, "combustible": "Eléctrico (EV)", "transmisión": "Automática"},
+        "Seal U": {"precio_nuevo": 42290, "potencia": 218, "combustible": "Eléctrico (EV)", "transmisión": "Automática"},
+        "Seal U DM-i": {"precio_nuevo": 38990, "potencia": 218, "combustible": "Híbrido Enchufe (PHEV)", "transmisión": "Automática"},
+    },
+    "Cupra": {
+        "Formentor": {"precio_nuevo": 34500, "potencia": 150, "combustible": "Gasolina", "transmisión": "Automática"},
+        "Leon": {"precio_nuevo": 29500, "potencia": 150, "combustible": "Híbrido", "transmisión": "Automática"},
+        "Ateca": {"precio_nuevo": 33000, "potencia": 150, "combustible": "Gasolina", "transmisión": "Automática"},
+        "Born": {"precio_nuevo": 37500, "potencia": 204, "combustible": "Eléctrico (EV)", "transmisión": "Automática"},
+        "Terramar": {"precio_nuevo": 41500, "potencia": 150, "combustible": "Híbrido", "transmisión": "Automática"},
+    },
+    "Dacia": {
+        "Sandero": {"precio_nuevo": 14500, "potencia": 100, "combustible": "GLP / GNC", "transmisión": "Manual"},
+        "Duster": {"precio_nuevo": 20500, "potencia": 130, "combustible": "Híbrido", "transmisión": "Manual"},
+        "Jogger": {"precio_nuevo": 19500, "potencia": 110, "combustible": "GLP / GNC", "transmisión": "Manual"},
+        "Bigster": {"precio_nuevo": 25500, "potencia": 155, "combustible": "Híbrido", "transmisión": "Automática"},
+    },
+    "Ford": {
+        "Fiesta": {"precio_nuevo": 18000, "potencia": 95, "combustible": "Gasolina", "transmisión": "Manual"},
+        "Focus": {"precio_nuevo": 26000, "potencia": 125, "combustible": "Gasolina", "transmisión": "Manual"},
+        "Puma": {"precio_nuevo": 24500, "potencia": 125, "combustible": "Híbrido", "transmisión": "Manual"},
+        "Kuga": {"precio_nuevo": 33000, "potencia": 150, "combustible": "Híbrido", "transmisión": "Automática"},
+    },
+    "Honda": {
+        "Civic": {"precio_nuevo": 32000, "potencia": 184, "combustible": "Híbrido", "transmisión": "Automática"},
+        "HR-V": {"precio_nuevo": 33000, "potencia": 131, "combustible": "Híbrido", "transmisión": "Automática"},
+        "CR-V": {"precio_nuevo": 43000, "potencia": 184, "combustible": "Híbrido", "transmisión": "Automática"},
+        "Jazz": {"precio_nuevo": 24500, "potencia": 109, "combustible": "Híbrido", "transmisión": "Automática"},
+        "ZR-V": {"precio_nuevo": 38500, "potencia": 184, "combustible": "Híbrido", "transmisión": "Automática"},
+    },
+    "Hyundai": {
+        "i20": {"precio_nuevo": 18000, "potencia": 100, "combustible": "Gasolina", "transmisión": "Manual"},
+        "i30": {"precio_nuevo": 23500, "potencia": 120, "combustible": "Gasolina", "transmisión": "Manual"},
+        "Kona": {"precio_nuevo": 26500, "potencia": 120, "combustible": "Gasolina", "transmisión": "Manual"},
+        "Tucson": {"precio_nuevo": 32500, "potencia": 150, "combustible": "Híbrido", "transmisión": "Automática"},
+        "Santa Fe": {"precio_nuevo": 47000, "potencia": 215, "combustible": "Híbrido", "transmisión": "Automática"},
+    },
+    "Kia": {
+        "Picanto": {"precio_nuevo": 14500, "potencia": 67, "combustible": "Gasolina", "transmisión": "Manual"},
+        "Ceed": {"precio_nuevo": 22500, "potencia": 120, "combustible": "Gasolina", "transmisión": "Manual"},
+        "Stonic": {"precio_nuevo": 21000, "potencia": 100, "combustible": "Gasolina", "transmisión": "Manual"},
+        "XCeed": {"precio_nuevo": 25500, "potencia": 120, "combustible": "Gasolina", "transmisión": "Manual"},
+        "Sportage": {"precio_nuevo": 32000, "potencia": 150, "combustible": "Híbrido", "transmisión": "Automática"},
+        "Sorento": {"precio_nuevo": 45000, "potencia": 215, "combustible": "Híbrido", "transmisión": "Automática"},
     },
     "Mercedes-Benz": {
-        "Clase A": {"precio_nuevo": 33000, "potencia": 136, "combustible": "Gasolina", "transmisión": "Automática"},
-        "Clase C": {"precio_nuevo": 47000, "potencia": 200, "combustible": "Híbrido", "transmisión": "Automática"},
-        "Clase E": {"precio_nuevo": 60000, "potencia": 197, "combustible": "Diésel", "transmisión": "Automática"},
-        "GLA": {"precio_nuevo": 40000, "potencia": 150, "combustible": "Diésel", "transmisión": "Automática"},
-        "GLC": {"precio_nuevo": 59000, "potencia": 197, "combustible": "Híbrido", "transmisión": "Automática"}
+        "Clase A": {"precio_nuevo": 34000, "potencia": 136, "combustible": "Gasolina", "transmisión": "Automática"},
+        "Clase C": {"precio_nuevo": 48000, "potencia": 200, "combustible": "Híbrido", "transmisión": "Automática"},
+        "Clase E": {"precio_nuevo": 61000, "potencia": 197, "combustible": "Diésel", "transmisión": "Automática"},
+        "GLA": {"precio_nuevo": 41000, "potencia": 150, "combustible": "Diésel", "transmisión": "Automática"},
+        "GLC": {"precio_nuevo": 60000, "potencia": 197, "combustible": "Híbrido", "transmisión": "Automática"},
     },
-    "Audi": {
-        "A3": {"precio_nuevo": 31000, "potencia": 116, "combustible": "Gasolina", "transmisión": "Manual"},
-        "A4": {"precio_nuevo": 42000, "potencia": 163, "combustible": "Diésel", "transmisión": "Automática"},
-        "A6": {"precio_nuevo": 57000, "potencia": 204, "combustible": "Diésel", "transmisión": "Automática"},
-        "Q3": {"precio_nuevo": 39000, "potencia": 150, "combustible": "Gasolina", "transmisión": "Automática"},
-        "Q5": {"precio_nuevo": 53000, "potencia": 204, "combustible": "Diésel", "transmisión": "Automática"}
-    }
+    "MG": {
+        "MG3 Hybrid+": {"precio_nuevo": 19990, "potencia": 194, "combustible": "Híbrido", "transmisión": "Automática"},
+        "ZS": {"precio_nuevo": 17500, "potencia": 106, "combustible": "Gasolina", "transmisión": "Manual"},
+        "ZS Hybrid+": {"precio_nuevo": 23490, "potencia": 197, "combustible": "Híbrido", "transmisión": "Automática"},
+        "HS": {"precio_nuevo": 29990, "potencia": 170, "combustible": "Gasolina", "transmisión": "Automática"},
+        "MG4": {"precio_nuevo": 30690, "potencia": 170, "combustible": "Eléctrico (EV)", "transmisión": "Automática"},
+    },
+    "Omoda": {
+        "Omoda 5": {"precio_nuevo": 27290, "potencia": 185, "combustible": "Gasolina", "transmisión": "Automática"},
+        "Omoda 5 EV": {"precio_nuevo": 37900, "potencia": 204, "combustible": "Eléctrico (EV)", "transmisión": "Automática"},
+        "Omoda 7": {"precio_nuevo": 34500, "potencia": 195, "combustible": "Híbrido", "transmisión": "Automática"},
+        "Omoda 9": {"precio_nuevo": 44900, "potencia": 450, "combustible": "Híbrido Enchufe (PHEV)", "transmisión": "Automática"},
+    },
+    "Peugeot": {
+        "208": {"precio_nuevo": 19000, "potencia": 100, "combustible": "Gasolina", "transmisión": "Manual"},
+        "2008": {"precio_nuevo": 24500, "potencia": 130, "combustible": "Gasolina", "transmisión": "Automática"},
+        "308": {"precio_nuevo": 26500, "potencia": 130, "combustible": "Gasolina", "transmisión": "Manual"},
+        "3008": {"precio_nuevo": 35500, "potencia": 136, "combustible": "Híbrido", "transmisión": "Automática"},
+        "5008": {"precio_nuevo": 39500, "potencia": 136, "combustible": "Híbrido", "transmisión": "Automática"},
+    },
+    "Renault": {
+        "Clio": {"precio_nuevo": 18500, "potencia": 90, "combustible": "Gasolina", "transmisión": "Manual"},
+        "Captur": {"precio_nuevo": 23500, "potencia": 100, "combustible": "Gasolina", "transmisión": "Manual"},
+        "Megane": {"precio_nuevo": 27000, "potencia": 140, "combustible": "Híbrido", "transmisión": "Automática"},
+        "Austral": {"precio_nuevo": 32500, "potencia": 200, "combustible": "Híbrido", "transmisión": "Automática"},
+        "Arkana": {"precio_nuevo": 29500, "potencia": 145, "combustible": "Híbrido", "transmisión": "Automática"},
+        "Symbioz": {"precio_nuevo": 30500, "potencia": 145, "combustible": "Híbrido", "transmisión": "Automática"},
+    },
+    "Seat": {
+        "Ibiza": {"precio_nuevo": 19500, "potencia": 95, "combustible": "Gasolina", "transmisión": "Manual"},
+        "Leon": {"precio_nuevo": 25000, "potencia": 115, "combustible": "Gasolina", "transmisión": "Manual"},
+        "Arona": {"precio_nuevo": 22500, "potencia": 110, "combustible": "Gasolina", "transmisión": "Manual"},
+        "Ateca": {"precio_nuevo": 28500, "potencia": 150, "combustible": "Gasolina", "transmisión": "Automática"},
+        "Tarraco": {"precio_nuevo": 35500, "potencia": 150, "combustible": "Diésel", "transmisión": "Automática"},
+    },
+    "Toyota": {
+        "Yaris": {"precio_nuevo": 21500, "potencia": 116, "combustible": "Híbrido", "transmisión": "Automática"},
+        "Yaris Cross": {"precio_nuevo": 26500, "potencia": 116, "combustible": "Híbrido", "transmisión": "Automática"},
+        "Corolla": {"precio_nuevo": 26500, "potencia": 140, "combustible": "Híbrido", "transmisión": "Automática"},
+        "C-HR": {"precio_nuevo": 31500, "potencia": 140, "combustible": "Híbrido", "transmisión": "Automática"},
+        "RAV4": {"precio_nuevo": 40500, "potencia": 218, "combustible": "Híbrido", "transmisión": "Automática"},
+        "Camry": {"precio_nuevo": 43000, "potencia": 218, "combustible": "Híbrido", "transmisión": "Automática"},
+    },
+    "Volkswagen": {
+        "Polo": {"precio_nuevo": 21500, "potencia": 95, "combustible": "Gasolina", "transmisión": "Manual"},
+        "Golf": {"precio_nuevo": 31500, "potencia": 130, "combustible": "Gasolina", "transmisión": "Manual"},
+        "T-Roc": {"precio_nuevo": 28500, "potencia": 115, "combustible": "Gasolina", "transmisión": "Manual"},
+        "Tiguan": {"precio_nuevo": 39000, "potencia": 150, "combustible": "Híbrido", "transmisión": "Automática"},
+        "Passat": {"precio_nuevo": 42000, "potencia": 150, "combustible": "Híbrido", "transmisión": "Automática"},
+    },
 }
 
-# Catálogo de entidades bancarias/financieras alternativas con sus condiciones de mercado
 ENTIDADES_FINANCIERAS = [
     {"entidad": "ING (Préstamo Naranja Coches)", "tin": 5.49, "destacado": "Sin comisiones y 100% online"},
     {"entidad": "BBVA (Préstamo Coche Online)", "tin": 5.95, "destacado": "Respuesta rápida para clientes y no clientes"},
     {"entidad": "Openbank (Préstamo Personal)", "tin": 4.95, "destacado": "El interés más bajo si domicilias nómina"},
     {"entidad": "Banco Santander (Préstamo Coche)", "tin": 6.25, "destacado": "Financiación flexible hasta 8 años"},
-    {"entidad": "Younited Credit", "tin": 5.75, "destacado": "Plataforma 100% digital rápida"}
+    {"entidad": "Younited Credit", "tin": 5.75, "destacado": "Plataforma 100% digital rápida"},
 ]
 
-st.markdown("### 📋 Datos del Vehículo y Financiación")
 
-col_m1, col_m2 = st.columns(2)
+def resolver_marca_en_bd(texto_marca: str):
+    """Devuelve la clave exacta de BASE_DATOS_COCHES si coincide de forma exacta o parcial."""
+    limpio = (texto_marca or "").strip().lower()
+    if not limpio or limpio.startswith("--"):
+        return None
+    for clave in BASE_DATOS_COCHES:
+        if clave.lower() == limpio:
+            return clave
+    for clave in BASE_DATOS_COCHES:
+        if clave.lower().startswith(limpio) or (len(limpio) >= 3 and limpio in clave.lower()):
+            return clave
+    return None
 
-with col_m1:
-    # --- SELECCIÓN DE MARCA ---
-    opciones_marcas = ["-- Selecciona o escribe abajo --"] + sorted(list(BASE_DATOS_COCHES.keys()))
-    marca_sel = st.selectbox("Marca del Vehículo", options=opciones_marcas)
-    marca_man = st.text_input("¿Otra marca? Escríbela aquí:", value="").strip()
-    
-    marca_final = marca_man.strip().title() if marca_man else (marca_sel if not marca_sel.startswith("--") else "Marca no especificada")
-
-    # --- SELECCIÓN DE MODELO ---
-    modelos_disponibles = list(BASE_DATOS_COCHES.get(marca_final, {}).keys())
-    opciones_modelos = ["-- Selecciona o escribe abajo --"] + modelos_disponibles
-    
-    modelo_sel = st.selectbox("Modelo del Vehículo", options=opciones_modelos)
-    modelo_man = st.text_input("¿Otro modelo? Escríbela aquí:", value="").strip()
-    
-    modelo_final = modelo_man.strip().title() if modelo_man else (modelo_sel if not modelo_sel.startswith("--") else "Modelo no especificado")
-
-    # Valores por defecto por si no se encuentra en la base de datos
-    precio_sugerido = 25000.0
-    potencia_sugerida = 110
-    combustible_sugerido = "Gasolina"
-    transmision_sugerida = "Manual"
-
-    # Autocompletar si existe en la base de datos
-    if marca_final in BASE_DATOS_COCHES and modelo_final in BASE_DATOS_COCHES[marca_final]:
-        datos_auto = BASE_DATOS_COCHES[marca_final][modelo_final]
-        precio_sugerido = float(datos_auto["precio_nuevo"])
-        potencia_sugerida = int(datos_auto["potencia"])
-        combustible_sugerido = datos_auto["combustible"]
-        transmision_sugerida = datos_auto["transmisión"]
-
-    precio_nuevo = st.number_input("Precio de Venta Nuevo Original (€)", min_value=0.0, value=precio_sugerido, step=500.0, format="%.2f")
-    
-    col_t1, col_t2 = st.columns(2)
-    with col_t1:
-        potencia_cv = st.number_input("Potencia (CV)", min_value=30, max_value=1000, value=potencia_sugerida, step=5)
-    with col_t2:
-        lista_transmisiones = ["Manual", "Automática"]
-        idx_trans = lista_transmisiones.index(transmision_sugerida) if transmision_sugerida in lista_transmisiones else 0
-        transmision = st.selectbox("Transmisión", lista_transmisiones, index=idx_trans)
-        
-    lista_combustibles = ["Gasolina", "Diésel", "Híbrido", "Híbrido Enchufe (PHEV)", "Eléctrico (EV)", "GLP / GNC"]
-    idx_comb = lista_combustibles.index(combustible_sugerido) if combustible_sugerido in lista_combustibles else 0
-    combustible = st.selectbox("Tipo de Combustión", lista_combustibles, index=idx_comb)
-
-with col_m2:
-    ano_matriculacion = st.number_input("Año de Matriculación", min_value=1980, max_value=datetime.datetime.now().year, value=2020, step=1)
-    km_actuales = st.number_input("Kilometraje Actual (km)", min_value=0, value=75000, step=5000)
-    
-    precio_contado = st.number_input("Precio al Contado (€)", min_value=0.0, value=14500.0, step=500.0, format="%.2f")
-    
-    # --- BLOQUE DE FINANCIACIÓN COMPLETO (CON TIN) ---
-    tiene_financiacion = st.checkbox("¿Tiene opción o precio financiado?")
-    
-    precio_financiado_total = 0.0
-    entrada_dinero = 0.0
-    cuota_mensual = 0.0
-    num_cuotas = 0
-    tin_pct = 0.0
-
-    if tiene_financiacion:
-        st.markdown("##### 💳 Opciones de Financiación del Concesionario (Coche Usado)")
-        
-        precio_financiado_total = st.number_input("Precio Total Financiado (si lo sabes directo) (€)", min_value=0.0, value=16800.0, step=500.0, format="%.2f")
-        
-        st.markdown("<p style='text-align: center; color: gray; margin: 0;'>— O desglósalo aquí abajo —</p>", unsafe_allow_html=True)
-        
-        col_f1, col_f2 = st.columns(2)
-        with col_f1:
-            entrada_dinero = st.number_input("Entrada (€)", min_value=0.0, value=3000.0, step=500.0, format="%.2f")
-            cuota_mensual = st.number_input("Cuota (€/mes)", min_value=0.0, value=230.0, step=10.0, format="%.2f")
-        with col_f2:
-            num_cuotas = st.number_input("Nº Cuotas (meses)", min_value=0, max_value=120, value=60, step=6)
-            tin_pct = st.number_input("Tipo de Interés TIN (%)", min_value=0.0, max_value=30.0, value=8.5, step=0.25, format="%.2f")
-        
-        if cuota_mensual > 0 and num_cuotas > 0:
-            calculo_desglose = entrada_dinero + (cuota_mensual * num_cuotas)
-            precio_financiado_total = calculo_desglose
-
-    etiqueta_dgt = st.selectbox("Etiqueta Ambiental DGT", ["ECO / Cero", "C", "B", "Sin Etiqueta"])
-
-st.markdown("---")
 
 def formato_es(valor):
-    """Convierte un número a formato español: puntos para miles y coma para decimales"""
     return f"{valor:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
 
+
 def calcular_cuota_francesa(capital, tin, meses):
-    """Calcula la cuota mensual mediante la fórmula de amortización francesa"""
     if tin == 0 or meses == 0:
         return capital / max(1, meses)
     r = (tin / 100) / 12
     return capital * (r * ((1 + r) ** meses)) / (((1 + r) ** meses) - 1)
 
-if st.button("Analizar si está Barato, Correcto o Caro", type="primary", use_container_width=True):
-    # 1. Cálculo de edad exacta
-    ano_actual = datetime.datetime.now().year
-    edad_anos = max(1, ano_actual - ano_matriculacion)
-    
-    # 2. Curva de depreciación base + factor corrector por tipo de combustible
-    corrector_combustible = 1.0
-    if combustible in ["Híbrido", "Eléctrico (EV)", "Híbrido Enchufe (PHEV)"]:
-        corrector_combustible = 1.03  
-        
-    valor_teorico = precio_nuevo * ((1 - 0.15) * ((1 - 0.08) ** (edad_anos - 1))) * corrector_combustible
-    
-    # 3. Ajuste por kilometraje (referencia estándar: 15.000 km/año)
-    km_teoricos_esperados = edad_anos * 15000
-    diferencia_km = km_actuales - km_teoricos_esperados
-    
-    ajuste_km_valor = (diferencia_km / 10000) * 0.01 * valor_teorico
-    valor_mercado_ajustado = max(1000.0, valor_teorico - ajuste_km_valor)
-    
-    # 4. Cálculo de variación porcentual respecto al precio al contado
-    variacion_pct = ((precio_contado - valor_mercado_ajustado) / valor_mercado_ajustado) * 100
-    
-    # 5. Veredicto del Semáforo
-    if variacion_pct <= -8.0:
-        estado = "🟢 ¡MUY BARATO / OPORTUNIDAD!"
-        detalle = f"El vehículo se encuentra un {abs(variacion_pct):.1f}% por debajo de su valor teórico de mercado al contado."
-    elif -8.0 < variacion_pct <= 6.0:
-        estado = "🟡 PRECIO CORRECTO / JUSTO"
-        detalle = "El precio al contado anunciado se ajusta de forma equilibrada a su antigüedad, potencia, combustible y kilometraje."
+
+st.markdown('<div class="glass-panel">', unsafe_allow_html=True)
+st.markdown("### 📋 Datos del Vehículo y Financiación")
+
+col_m1, col_m2 = st.columns(2)
+
+with col_m1:
+    opciones_marcas = ["-- Selecciona o escribe abajo --"] + sorted(list(BASE_DATOS_COCHES.keys()))
+    marca_sel = st.selectbox("Marca del Vehículo", options=opciones_marcas)
+    marca_man = st.text_input(
+        "¿Otra marca o búsqueda directa? Escríbela aquí (ej. BYD, Omoda, Cupra...):",
+        value="",
+    ).strip()
+
+    marca_coincidente = resolver_marca_en_bd(marca_man) if marca_man else resolver_marca_en_bd(marca_sel)
+    if marca_man:
+        marca_final = marca_coincidente if marca_coincidente else marca_man.title()
     else:
-        estado = "🔴 CARO / SOBREVALORADO"
-        detalle = f"El precio al contado supera en un {variacion_pct:.1f}% la estimación teórica de mercado."
+        marca_final = marca_coincidente if marca_coincidente else "Marca no especificada"
 
-    # Informe final en pantalla
-    st.markdown(f"### 📊 Resultado del Análisis: **{marca_final} {modelo_final}** ({potencia_cv} CV - {combustible} - {transmision})")
-    
-    m1, m2, m3 = st.columns(3)
-    m1.metric("Valor Teórico Estimado", f"{formato_es(valor_mercado_ajustado)} €")
-    m2.metric("Precio al Contado", f"{formato_es(precio_contado)} €")
-    m3.metric("Desviación de Mercado", f"{variacion_pct:+.1f}%".replace(".", ","))
-    
-    # --- RESULTADOS DE FINANCIACIÓN DEL CONCESIONARIO ---
-    if tiene_financiacion and precio_financiado_total > 0:
-        sobrecoste_financiacion = precio_financiado_total - precio_contado
-        st.markdown("---")
-        st.markdown("### 💳 Análisis de la Financiación de la Oferta (Coche Usado)")
-        
-        if cuota_mensual > 0 and num_cuotas > 0:
-            f1, f2, f3, f4, f5 = st.columns(5)
-            f1.metric("Entrada Inicial", f"{formato_es(entrada_dinero)} €")
-            f2.metric("Cuota Mensual", f"{formato_es(cuota_mensual)} € / mes", delta=f"{num_cuotas} meses", delta_color="off")
-            f3.metric("TIN Aplicado", f"{tin_pct:.2f}%".replace(".", ","))
-            f4.metric("Total Financiado", f"{formato_es(precio_financiado_total)} €")
-            f5.metric("Sobrecoste Intereses", f"+ {formato_es(sobrecoste_financiacion)} €", delta_color="inverse")
-        else:
-            col_f1, col_f2, col_f3 = st.columns(3)
-            col_f1.metric("Precio Total Financiado", f"{formato_es(precio_financiado_total)} €")
-            col_f2.metric("TIN Aplicado", f"{tin_pct:.2f}%".replace(".", ","))
-            col_f3.metric("Sobrecoste Intereses", f"+ {formato_es(sobrecoste_financiacion)} €", delta_color="inverse")
-        
-        if sobrecoste_financiacion > 2000:
-            st.warning(f"⚠️ **Aviso de Financiación:** Al financiar con la oferta de la marca (TIN {tin_pct:.2f}%) pagas **{formato_es(sobrecoste_financiacion)} € más** que al contado.")
+    # Al escribir una marca (en la caja de texto o seleccionándola), cargamos sus modelos automáticamente
+    modelos_disponibles = list(BASE_DATOS_COCHES.get(marca_coincidente or marca_final, {}).keys())
+    opciones_modelos = (
+        ["-- Selecciona un modelo o escríbelo abajo --"] + modelos_disponibles
+        if modelos_disponibles
+        else ["-- Escribe el modelo abajo --"]
+    )
+    default_modelo_idx = 1 if modelos_disponibles else 0
 
-        # =========================================================================
-        # --- TABLA COMPARATIVA CON BANCAS Y OPCIÓN DE COCHE NUEVO FINANCIADO ---
-        # =========================================================================
-        st.markdown("---")
-        st.markdown("### 🏦 Alternativas de Financiación y Comparativa de Coste Total")
-        st.info("💡 **Comparativa de Opciones:** A continuación ves el coste total de financiar este coche con bancos tradicionales frente al coste de comprar el vehículo **NUEVO A ESTRENAR** con la financiera oficial de la marca:")
+    modelo_sel = st.selectbox(
+        "Modelo del Vehículo (se actualiza según la marca escrita)",
+        options=opciones_modelos,
+        index=default_modelo_idx,
+    )
+    modelo_man = st.text_input("¿Otro modelo? Escríbelo aquí:", value="").strip()
 
-        capital_a_financiar_usado = max(1000.0, precio_contado - entrada_dinero)
-        plazo_meses_simulacion = num_cuotas if num_cuotas > 0 else 60
-        tin_ref_marca = tin_pct if tin_pct > 0 else 6.99
+    if modelo_man:
+        modelo_final = modelo_man
+    elif not modelo_sel.startswith("--"):
+        modelo_final = modelo_sel
+    else:
+        modelo_final = "Modelo no especificado"
 
-        filas_comparativa = []
-
-        # 1. Opción Coche Nuevo con Financiera de Marca
-        # Asumimos precio_nuevo menos la entrada introducida, con el TIN medio oficial de marca
-        capital_a_financiar_nuevo = max(1000.0, precio_nuevo - entrada_dinero)
-        cuota_nuevo = calcular_cuota_francesa(capital_a_financiar_nuevo, tin_ref_marca, plazo_meses_simulacion)
-        total_pagado_nuevo = entrada_dinero + (cuota_nuevo * plazo_meses_simulacion)
-        diferencia_nuevo_vs_usado = total_pagado_nuevo - precio_financiado_total
-
-        filas_comparativa.append({
-            "Opción / Entidad": f"✨ COCHE NUEVO ({marca_final} {modelo_final})",
-            "TIN (%)": f"{tin_ref_marca:.2f}%".replace(".", ","),
-            "Cuota Est. (€/mes)": f"{formato_es(cuota_nuevo)} €",
-            "Total Pagado (€)": f"{formato_es(total_pagado_nuevo)} €",
-            "Diferencia vs Oferta Usado (€)": f"+ {formato_es(diferencia_nuevo_vs_usado)} € (Coche a estrenar)",
-            "Detalle de la Alternativa": f"Precio nuevo oficial de {formato_es(precio_nuevo)} € financiado con la marca"
-        })
-
-        # 2. Entidades Bancarias Personales
-        for ent in ENTIDADES_FINANCIERAS:
-            c_mensual = calcular_cuota_francesa(capital_a_financiar_usado, ent["tin"], plazo_meses_simulacion)
-            total_pagado = entrada_dinero + (c_mensual * plazo_meses_simulacion)
-            ahorro_vs_concesionario = precio_financiado_total - total_pagado
-            
-            filas_comparativa.append({
-                "Opción / Entidad": ent["entidad"],
-                "TIN (%)": f"{ent['tin']:.2f}%".replace(".", ","),
-                "Cuota Est. (€/mes)": f"{formato_es(c_mensual)} €",
-                "Total Pagado (€)": f"{formato_es(total_pagado)} €",
-                "Diferencia vs Oferta Usado (€)": f"🟢 Ahorras {formato_es(ahorro_vs_concesionario)} €" if ahorro_vs_concesionario > 0 else f"{formato_es(ahorro_vs_concesionario)} €",
-                "Detalle de la Alternativa": ent["destacado"]
-            })
-
-        import pandas as pd
-        df_comparativa = pd.DataFrame(filas_comparativa)
-        st.dataframe(df_comparativa, use_container_width=True)
-
-    st.markdown(f"#### Veredicto: {estado}")
-    st.info(f"**Justificación:** {detalle}")
+    precio_sugerido = 25000.0
+    potencia_sugerida =

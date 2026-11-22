@@ -128,3 +128,520 @@
                 <div>
                     <label for="combustible" class="block text-xs font-mono uppercase text-slate-400 mb-1.5">Combustión</label>
                     <select id="combustible" class="w-full px-3.5 py-2.5 bg-slate-950/90 border border-slate-700 rounded-xl text-sm text-white">
+                        <option value="Gasolina">Gasolina</option>
+                        <option value="Diésel">Diésel</option>
+                        <option value="Híbrido">Híbrido</option>
+                        <option value="Híbrido Enchufe (PHEV)">Híbrido Enchufe (PHEV)</option>
+                        <option value="Eléctrico (EV)">Eléctrico (EV)</option>
+                        <option value="GLP / GNC">GLP / GNC</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Bloque de Batería (solo visible en Eléctrico EV e Híbrido Enchufe PHEV) -->
+            <div id="bloque-bateria" class="hidden p-4 rounded-xl bg-sky-500/5 border border-sky-500/25 space-y-3">
+                <div class="flex flex-wrap items-center justify-between gap-2">
+                    <span class="text-xs font-mono uppercase text-sky-300 font-semibold">🔋 Estado de Batería (EV / PHEV)</span>
+                    <span id="bateria-equivalencia" class="text-xs font-mono text-slate-400">SoH equivalente: --</span>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div>
+                        <label for="modo-bateria" class="block text-xs font-mono uppercase text-slate-400 mb-1.5">Dato del anuncio</label>
+                        <select id="modo-bateria" class="w-full px-3.5 py-2 bg-slate-950/90 border border-slate-700 rounded-xl text-sm text-white">
+                            <option value="sin_dato">No lo sé / Estimar</option>
+                            <option value="porcentaje">Salud en porcentaje (%)</option>
+                            <option value="autonomia_km">Autonomía estimada (km)</option>
+                        </select>
+                    </div>
+
+                    <div id="campo-soh-pct" class="hidden">
+                        <label for="soh-pct" class="block text-xs font-mono uppercase text-slate-400 mb-1.5">Salud Batería (%)</label>
+                        <input type="number" id="soh-pct" value="92" min="40" max="105" step="1" class="w-full px-3.5 py-2 bg-slate-950/90 border border-slate-700 rounded-xl text-sm font-mono text-white">
+                    </div>
+
+                    <div id="campo-autonomia-km" class="hidden">
+                        <label for="autonomia-km" class="block text-xs font-mono uppercase text-slate-400 mb-1.5">Autonomía Actual (km)</label>
+                        <input type="number" id="autonomia-km" value="350" min="10" max="1200" step="5" class="w-full px-3.5 py-2 bg-slate-950/90 border border-slate-700 rounded-xl text-sm font-mono text-white">
+                    </div>
+
+                    <div>
+                        <label for="autonomia-ref-km" class="block text-xs font-mono uppercase text-slate-400 mb-1.5">Autonomía Nueva Ref. (km)</label>
+                        <input type="number" id="autonomia-ref-km" value="420" min="20" max="1200" step="5" class="w-full px-3.5 py-2 bg-slate-950/90 border border-slate-700 rounded-xl text-sm font-mono text-white">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Año, Km, Contado y DGT -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 pt-2 border-t border-slate-800/80">
+                <div>
+                    <label for="ano-mat" class="block text-xs font-mono uppercase text-slate-400 mb-1.5">Año Matriculación</label>
+                    <input type="number" id="ano-mat" value="2021" min="1980" max="2026" step="1" class="w-full px-3.5 py-2.5 bg-slate-950/90 border border-slate-700 rounded-xl text-sm font-mono text-white">
+                </div>
+                <div>
+                    <label for="km-actuales" class="block text-xs font-mono uppercase text-slate-400 mb-1.5">Kilometraje (km)</label>
+                    <input type="number" id="km-actuales" value="60000" min="0" step="5000" class="w-full px-3.5 py-2.5 bg-slate-950/90 border border-slate-700 rounded-xl text-sm font-mono text-white">
+                </div>
+                <div>
+                    <label for="precio-contado" class="block text-xs font-mono uppercase text-slate-400 mb-1.5">Precio al Contado (€)</label>
+                    <input type="number" id="precio-contado" value="16500" min="0" step="500" class="w-full px-3.5 py-2.5 bg-slate-950/90 border border-slate-700 rounded-xl text-sm font-mono text-white">
+                </div>
+                <div>
+                    <label for="etiqueta-dgt" class="block text-xs font-mono uppercase text-slate-400 mb-1.5">Etiqueta DGT</label>
+                    <select id="etiqueta-dgt" class="w-full px-3.5 py-2.5 bg-slate-950/90 border border-slate-700 rounded-xl text-sm text-white">
+                        <option value="ECO / Cero">ECO / Cero</option>
+                        <option value="C">C</option>
+                        <option value="B">B</option>
+                        <option value="Sin Etiqueta">Sin Etiqueta</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Financiación opcional -->
+            <div class="pt-2 border-t border-slate-800/80 space-y-4">
+                <label class="inline-flex items-center gap-2.5 text-sm font-medium text-slate-200 cursor-pointer">
+                    <input type="checkbox" id="chk-financiacion" class="w-4 h-4 rounded accent-emerald-500">
+                    ¿Tiene opción o precio financiado?
+                </label>
+
+                <div id="bloque-financiacion" class="hidden grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 p-4 rounded-xl bg-slate-950/60 border border-slate-800/80">
+                    <div>
+                        <label for="fin-total-directo" class="block text-xs font-mono uppercase text-slate-400 mb-1.5">Total Financiado (€)</label>
+                        <input type="number" id="fin-total-directo" value="19200" min="0" step="500" class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-sm font-mono text-white">
+                    </div>
+                    <div>
+                        <label for="fin-entrada" class="block text-xs font-mono uppercase text-slate-400 mb-1.5">Entrada (€)</label>
+                        <input type="number" id="fin-entrada" value="3500" min="0" step="500" class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-sm font-mono text-white">
+                    </div>
+                    <div>
+                        <label for="fin-cuota" class="block text-xs font-mono uppercase text-slate-400 mb-1.5">Cuota (€/mes)</label>
+                        <input type="number" id="fin-cuota" value="260" min="0" step="10" class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-sm font-mono text-white">
+                    </div>
+                    <div>
+                        <label for="fin-meses" class="block text-xs font-mono uppercase text-slate-400 mb-1.5">Nº Cuotas (meses)</label>
+                        <input type="number" id="fin-meses" value="60" min="0" max="120" step="6" class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-sm font-mono text-white">
+                    </div>
+                    <div>
+                        <label for="fin-tin" class="block text-xs font-mono uppercase text-slate-400 mb-1.5">TIN (%)</label>
+                        <input type="number" id="fin-tin" value="8.5" min="0" max="30" step="0.25" class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-sm font-mono text-white">
+                    </div>
+                </div>
+            </div>
+
+            <div class="pt-2">
+                <button type="button" id="btn-analizar" class="w-full py-3.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:brightness-110 text-slate-950 font-bold text-sm tracking-wide shadow-lg shadow-emerald-500/20 transition cursor-pointer">
+                    Analizar si está Barato, Correcto o Caro
+                </button>
+            </div>
+        </section>
+
+        <!-- Resultado -->
+        <section id="panel-resultado" class="glass-card rounded-2xl p-6 shadow-xl space-y-6">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
+                <div class="lg:col-span-4 flex flex-col items-center text-center">
+                    <div class="relative w-40 h-40 flex items-center justify-center">
+                        <svg class="w-full h-full -rotate-90" viewBox="0 0 120 120">
+                            <circle cx="60" cy="60" r="52" fill="none" stroke="#1e293b" stroke-width="10" />
+                            <circle id="score-circle" class="score-ring" cx="60" cy="60" r="52" fill="none" stroke="#10b981" stroke-width="10" stroke-linecap="round" stroke-dasharray="326.72" stroke-dashoffset="90" />
+                        </svg>
+                        <div class="absolute inset-0 flex flex-col items-center justify-center">
+                            <span class="text-[11px] uppercase tracking-widest text-slate-400">Score</span>
+                            <span id="res-score" class="text-4xl font-bold font-mono text-white">72</span>
+                            <span class="text-xs font-mono text-slate-500">/ 100</span>
+                        </div>
+                    </div>
+                    <div id="res-estado" class="mt-3 px-3.5 py-1.5 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 font-semibold text-xs sm:text-sm">
+                        🟡 PRECIO CORRECTO / JUSTO
+                    </div>
+                </div>
+
+                <div class="lg:col-span-8 space-y-4">
+                    <h2 id="res-titulo" class="text-xl font-bold text-white">Resultado del Análisis</h2>
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                        <div class="p-4 rounded-xl bg-slate-950/70 border border-slate-800/80">
+                            <span class="text-xs text-slate-400 block">Valor Teórico Estimado</span>
+                            <span id="m-teorico" class="text-lg font-bold font-mono text-white">0,00 €</span>
+                        </div>
+                        <div class="p-4 rounded-xl bg-slate-950/70 border border-slate-800/80">
+                            <span class="text-xs text-slate-400 block">Precio al Contado</span>
+                            <span id="m-contado" class="text-lg font-bold font-mono text-white">0,00 €</span>
+                        </div>
+                        <div class="p-4 rounded-xl bg-slate-950/70 border border-slate-800/80">
+                            <span class="text-xs text-slate-400 block">Desviación de Mercado</span>
+                            <span id="m-desviacion" class="text-lg font-bold font-mono text-emerald-400">0,0%</span>
+                        </div>
+                    </div>
+                    <p id="res-justificacion" class="text-sm text-sky-200 bg-sky-500/10 border border-sky-500/20 p-4 rounded-xl"></p>
+                    <p id="res-nota-bateria" class="hidden text-xs sm:text-sm text-slate-300 bg-slate-950/70 border border-slate-800 p-3.5 rounded-xl"></p>
+                </div>
+            </div>
+
+            <div id="seccion-financiacion" class="hidden pt-6 border-t border-slate-800 space-y-4">
+                <h3 class="text-base font-bold text-white">💳 Análisis de Financiación y Comparativa</h3>
+                <div id="kpis-financiacion" class="grid grid-cols-2 sm:grid-cols-5 gap-3"></div>
+                <div id="aviso-financiacion" class="hidden p-3.5 rounded-xl bg-amber-500/15 border border-amber-500/30 text-amber-200 text-xs sm:text-sm"></div>
+                <div class="overflow-x-auto rounded-xl border border-slate-800">
+                    <table class="w-full text-left text-xs sm:text-sm">
+                        <thead class="bg-slate-950 text-slate-400 font-mono text-xs uppercase">
+                            <tr>
+                                <th class="py-3 px-4">Opción / Entidad</th>
+                                <th class="py-3 px-4">TIN</th>
+                                <th class="py-3 px-4">Cuota Est.</th>
+                                <th class="py-3 px-4">Total Pagado</th>
+                                <th class="py-3 px-4">Diferencia vs Oferta Usado</th>
+                                <th class="py-3 px-4">Detalle</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabla-bancos-body" class="divide-y divide-slate-800/80 bg-slate-900/40"></tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        function formatoEs(val) {
+            return Number(val || 0).toLocaleString("es-ES", {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            });
+        }
+
+        function cuotaFrancesa(capital, tin, meses) {
+            const m = Math.max(1, meses);
+            if (!tin || tin <= 0) return capital / m;
+            const r = (tin / 100) / 12;
+            return capital * (r * Math.pow(1 + r, m)) / (Math.pow(1 + r, m) - 1);
+        }
+
+        function resolverMarca(texto) {
+            const bd = window.BASE_DATOS_COCHES || {};
+            const limpio = (texto || "").trim().toLowerCase();
+            if (!limpio || limpio.startsWith("--")) return null;
+            const claves = Object.keys(bd);
+            return claves.find(k => k.toLowerCase() === limpio)
+                || claves.find(k => k.toLowerCase().startsWith(limpio) || (limpio.length >= 3 && k.toLowerCase().includes(limpio)))
+                || null;
+        }
+
+        function actualizarVisibilidadBateria() {
+            const comb = document.getElementById("combustible").value;
+            const esBateria = ["Eléctrico (EV)", "Híbrido Enchufe (PHEV)"].includes(comb);
+            const bloque = document.getElementById("bloque-bateria");
+            bloque.classList.toggle("hidden", !esBateria);
+
+            const modo = document.getElementById("modo-bateria").value;
+            document.getElementById("campo-soh-pct").classList.toggle("hidden", !(esBateria && modo === "porcentaje"));
+            document.getElementById("campo-autonomia-km").classList.toggle("hidden", !(esBateria && modo === "autonomia_km"));
+        }
+
+        function evaluarFactorBateria(combustible, edadAnos) {
+            if (!["Eléctrico (EV)", "Híbrido Enchufe (PHEV)"].includes(combustible)) {
+                return { factor: 1.0, sohEquivalente: null, texto: "" };
+            }
+
+            const modo = document.getElementById("modo-bateria").value;
+            const refKm = Math.max(20, parseFloat(document.getElementById("autonomia-ref-km").value) || (combustible === "Eléctrico (EV)" ? 400 : 80));
+            const sohEsperado = Math.max(72, Math.min(98, 100 - edadAnos * 2.0));
+
+            let soh = sohEsperado;
+            let fuente = "estimación por antigüedad";
+
+            if (modo === "porcentaje") {
+                const valPct = parseFloat(document.getElementById("soh-pct").value);
+                if (!Number.isNaN(valPct) && valPct > 0) {
+                    soh = Math.max(40, Math.min(105, valPct));
+                    const kmEst = Math.round((soh / 100) * refKm);
+                    fuente = `salud declarada del ${soh.toFixed(1).replace(".", ",")}% (~${kmEst} km de ${refKm} km ref.)`;
+                }
+            } else if (modo === "autonomia_km") {
+                const valKm = parseFloat(document.getElementById("autonomia-km").value);
+                if (!Number.isNaN(valKm) && valKm > 0) {
+                    soh = Math.max(40, Math.min(105, (valKm / refKm) * 100));
+                    fuente = `autonomía declarada de ${Math.round(valKm)} km sobre ${refKm} km de referencia (${soh.toFixed(1).replace(".", ",")}% est.)`;
+                }
+            }
+
+            // Factor corrector acotado para evitar saltos bruscos si falta certificado o hay dato de ciclo distinto
+            const desvSoh = soh - sohEsperado;
+            const factor = Math.max(0.80, Math.min(1.06, 1 + desvSoh * 0.008));
+            const kmCalculados = Math.round((soh / 100) * refKm);
+
+            let alerta = "";
+            if (soh < 78) {
+                alerta = " — ⚠️ Degradación baja: conviene revisar estado de celdas y garantía vigente de batería.";
+            } else if (soh >= 92) {
+                alerta = " — ✅ Batería en muy buen estado aparente.";
+            }
+
+            return {
+                factor,
+                sohEquivalente: soh,
+                texto: `🔋 <strong>Batería (${fuente}):</strong> ~${kmCalculados} km estimados · Ajuste de valoración: ${factor >= 1 ? "+" : ""}${((factor - 1) * 100).toFixed(1).replace(".", ",")}%${alerta}`
+            };
+        }
+
+        function poblarModelosYAutocompletar(mantenerModeloManual = false) {
+            const bd = window.BASE_DATOS_COCHES || {};
+            const selMarca = document.getElementById("select-marca");
+            const inpMarcaMan = document.getElementById("input-marca-man");
+            const selModelo = document.getElementById("select-modelo");
+            const inpModeloMan = document.getElementById("input-modelo-man");
+
+            const marcaCoincidente = inpMarcaMan.value.trim()
+                ? resolverMarca(inpMarcaMan.value)
+                : resolverMarca(selMarca.value);
+
+            const modelos = marcaCoincidente ? Object.keys(bd[marcaCoincidente] || {}) : [];
+            const prevModelo = selModelo.value;
+
+            selModelo.innerHTML = "";
+            const optDef = document.createElement("option");
+            optDef.value = "--";
+            optDef.textContent = modelos.length ? "-- Selecciona un modelo o escribe abajo --" : "-- Escribe el modelo abajo --";
+            selModelo.appendChild(optDef);
+
+            modelos.forEach(m => {
+                const opt = document.createElement("option");
+                opt.value = m;
+                opt.textContent = m;
+                selModelo.appendChild(opt);
+            });
+
+            if (modelos.includes(prevModelo)) {
+                selModelo.value = prevModelo;
+            } else if (modelos.length > 0 && !mantenerModeloManual) {
+                selModelo.selectedIndex = 1;
+            }
+
+            const modeloActivo = inpModeloMan.value.trim() || (selModelo.value !== "--" ? selModelo.value : "");
+            if (marcaCoincidente && modeloActivo && bd[marcaCoincidente] && bd[marcaCoincidente][modeloActivo]) {
+                const d = bd[marcaCoincidente][modeloActivo];
+                document.getElementById("precio-nuevo").value = d.precio_nuevo;
+                document.getElementById("potencia-cv").value = d.potencia;
+                document.getElementById("combustible").value = d.combustible;
+                document.getElementById("transmision").value = d.transmision;
+                if (d.autonomia_km && d.autonomia_km > 0) {
+                    document.getElementById("autonomia-ref-km").value = d.autonomia_km;
+                    document.getElementById("autonomia-km").value = Math.round(d.autonomia_km * 0.85);
+                }
+            }
+
+            actualizarVisibilidadBateria();
+        }
+
+        function analizar() {
+            const bancos = window.ENTIDADES_FINANCIERAS || [];
+            const selMarca = document.getElementById("select-marca");
+            const inpMarcaMan = document.getElementById("input-marca-man");
+            const selModelo = document.getElementById("select-modelo");
+            const inpModeloMan = document.getElementById("input-modelo-man");
+
+            const marcaMatch = inpMarcaMan.value.trim() ? resolverMarca(inpMarcaMan.value) : resolverMarca(selMarca.value);
+            const marcaFinal = inpMarcaMan.value.trim()
+                ? (marcaMatch || inpMarcaMan.value.trim())
+                : (marcaMatch || "Marca no especificada");
+
+            const modeloFinal = inpModeloMan.value.trim()
+                || (selModelo.value !== "--" ? selModelo.value : "Modelo no especificado");
+
+            const precioNuevo = Math.max(0, parseFloat(document.getElementById("precio-nuevo").value) || 0);
+            const potencia = parseInt(document.getElementById("potencia-cv").value, 10) || 110;
+            const transmision = document.getElementById("transmision").value;
+            const combustible = document.getElementById("combustible").value;
+            const anoMat = parseInt(document.getElementById("ano-mat").value, 10) || 2021;
+            const km = Math.max(0, parseFloat(document.getElementById("km-actuales").value) || 0);
+            const contado = Math.max(0, parseFloat(document.getElementById("precio-contado").value) || 0);
+            const dgt = document.getElementById("etiqueta-dgt").value;
+
+            const anoActual = new Date().getFullYear();
+            const edad = Math.max(1, anoActual - anoMat);
+            const correctorComb = ["Híbrido", "Eléctrico (EV)", "Híbrido Enchufe (PHEV)"].includes(combustible) ? 1.03 : 1.0;
+            const infoBateria = evaluarFactorBateria(combustible, edad);
+
+            if (infoBateria.sohEquivalente !== null) {
+                document.getElementById("bateria-equivalencia").textContent =
+                    `SoH equivalente: ${infoBateria.sohEquivalente.toFixed(1).replace(".", ",")}%`;
+            }
+
+            const baseVal = precioNuevo > 0 ? precioNuevo : Math.max(contado, 1000);
+            const valorTeorico = baseVal * ((1 - 0.15) * Math.pow(1 - 0.08, edad - 1)) * correctorComb * infoBateria.factor;
+
+            const diffKm = km - (edad * 15000);
+            const ajusteKm = (diffKm / 10000) * 0.01 * valorTeorico;
+            const valorAjustado = Math.max(1000, valorTeorico - ajusteKm);
+            const varPct = ((contado - valorAjustado) / valorAjustado) * 100;
+
+            let estado = "🟡 PRECIO CORRECTO / JUSTO";
+            let colorHex = "#f59e0b";
+            let justificacion = "El precio al contado anunciado se ajusta de forma equilibrada a su antigüedad, potencia, combustible y kilometraje.";
+
+            if (varPct <= -8.0) {
+                estado = "🟢 ¡MUY BARATO / OPORTUNIDAD!";
+                colorHex = "#10b981";
+                justificacion = `El vehículo se encuentra un ${Math.abs(varPct).toFixed(1).replace(".", ",")}% por debajo de su valor teórico de mercado al contado (${dgt}).`;
+            } else if (varPct > 6.0) {
+                estado = "🔴 CARO / SOBREVALORADO";
+                colorHex = "#f43f5e";
+                justificacion = `El precio al contado supera en un ${varPct.toFixed(1).replace(".", ",")}% la estimación teórica de mercado.`;
+            }
+
+            const score = Math.max(5, Math.min(99, Math.round(80 - varPct * 2.2)));
+            const circ = 326.72;
+            document.getElementById("score-circle").style.stroke = colorHex;
+            document.getElementById("score-circle").style.strokeDashoffset = circ - (score / 100) * circ;
+            document.getElementById("res-score").textContent = score;
+            document.getElementById("res-estado").textContent = estado;
+            document.getElementById("res-titulo").textContent = `Resultado del Análisis: ${marcaFinal} ${modeloFinal} (${potencia} CV · ${combustible} · ${transmision})`;
+            document.getElementById("m-teorico").textContent = `${formatoEs(valorAjustado)} €`;
+            document.getElementById("m-contado").textContent = `${formatoEs(contado)} €`;
+            document.getElementById("m-desviacion").textContent = `${varPct >= 0 ? "+" : ""}${varPct.toFixed(1).replace(".", ",")}%`;
+            document.getElementById("res-justificacion").innerHTML = `<strong>Justificación:</strong> ${justificacion}`;
+
+            const notaBat = document.getElementById("res-nota-bateria");
+            if (infoBateria.texto) {
+                notaBat.classList.remove("hidden");
+                notaBat.innerHTML = infoBateria.texto;
+            } else {
+                notaBat.classList.add("hidden");
+            }
+
+            const secFin = document.getElementById("seccion-financiacion");
+            const tieneFin = document.getElementById("chk-financiacion").checked;
+            let totalFin = parseFloat(document.getElementById("fin-total-directo").value) || 0;
+            const entrada = parseFloat(document.getElementById("fin-entrada").value) || 0;
+            const cuota = parseFloat(document.getElementById("fin-cuota").value) || 0;
+            const meses = parseInt(document.getElementById("fin-meses").value, 10) || 0;
+            const tin = parseFloat(document.getElementById("fin-tin").value) || 0;
+
+            if (cuota > 0 && meses > 0) {
+                totalFin = entrada + cuota * meses;
+            }
+
+            if (tieneFin && totalFin > 0) {
+                secFin.classList.remove("hidden");
+                const sobrecoste = totalFin - contado;
+                const kpis = document.getElementById("kpis-financiacion");
+                kpis.innerHTML = `
+                    <div class="p-3 rounded-xl bg-slate-950/70 border border-slate-800"><span class="text-xs text-slate-400 block">Entrada</span><strong class="font-mono text-white">${formatoEs(entrada)} €</strong></div>
+                    <div class="p-3 rounded-xl bg-slate-950/70 border border-slate-800"><span class="text-xs text-slate-400 block">Cuota (${meses || 60}m)</span><strong class="font-mono text-white">${formatoEs(cuota)} €/mes</strong></div>
+                    <div class="p-3 rounded-xl bg-slate-950/70 border border-slate-800"><span class="text-xs text-slate-400 block">TIN</span><strong class="font-mono text-sky-400">${tin.toFixed(2).replace(".", ",")}%</strong></div>
+                    <div class="p-3 rounded-xl bg-slate-950/70 border border-slate-800"><span class="text-xs text-slate-400 block">Total Financiado</span><strong class="font-mono text-white">${formatoEs(totalFin)} €</strong></div>
+                    <div class="p-3 rounded-xl bg-slate-950/70 border border-slate-800"><span class="text-xs text-slate-400 block">Sobrecoste</span><strong class="font-mono text-rose-400">+ ${formatoEs(sobrecoste)} €</strong></div>
+                `;
+
+                const aviso = document.getElementById("aviso-financiacion");
+                if (sobrecoste > 2000) {
+                    aviso.classList.remove("hidden");
+                    aviso.innerHTML = `⚠️ <strong>Aviso de Financiación:</strong> Al financiar con la oferta de la marca (TIN ${tin.toFixed(2)}%) pagas <strong>${formatoEs(sobrecoste)} € más</strong> que al contado.`;
+                } else {
+                    aviso.classList.add("hidden");
+                }
+
+                const capUsado = Math.max(1000, contado - entrada);
+                const plazo = meses > 0 ? meses : 60;
+                const tinRef = tin > 0 ? tin : 6.99;
+                const capNuevo = Math.max(1000, precioNuevo - entrada);
+                const cuotaNuevo = cuotaFrancesa(capNuevo, tinRef, plazo);
+                const totalNuevo = entrada + cuotaNuevo * plazo;
+                const diffNuevoUsado = totalNuevo - totalFin;
+
+                let rows = `
+                    <tr class="bg-emerald-500/5">
+                        <td class="py-3 px-4 font-semibold text-white">✨ COCHE NUEVO (${marcaFinal} ${modeloFinal})</td>
+                        <td class="py-3 px-4 font-mono">${tinRef.toFixed(2).replace(".", ",")}%</td>
+                        <td class="py-3 px-4 font-mono">${formatoEs(cuotaNuevo)} €</td>
+                        <td class="py-3 px-4 font-mono">${formatoEs(totalNuevo)} €</td>
+                        <td class="py-3 px-4 font-mono text-sky-300">+ ${formatoEs(diffNuevoUsado)} € (A estrenar)</td>
+                        <td class="py-3 px-4 text-slate-300">Precio nuevo oficial de ${formatoEs(precioNuevo)} € financiado</td>
+                    </tr>
+                `;
+
+                bancos.forEach(b => {
+                    const cB = cuotaFrancesa(capUsado, b.tin, plazo);
+                    const totB = entrada + cB * plazo;
+                    const ahorro = totalFin - totB;
+                    rows += `
+                        <tr>
+                            <td class="py-3 px-4 font-medium text-white">${b.entidad}</td>
+                            <td class="py-3 px-4 font-mono">${Number(b.tin).toFixed(2).replace(".", ",")}%</td>
+                            <td class="py-3 px-4 font-mono">${formatoEs(cB)} €</td>
+                            <td class="py-3 px-4 font-mono">${formatoEs(totB)} €</td>
+                            <td class="py-3 px-4 font-mono ${ahorro > 0 ? "text-emerald-400" : "text-slate-300"}">${ahorro > 0 ? `🟢 Ahorras ${formatoEs(ahorro)} €` : `${formatoEs(ahorro)} €`}</td>
+                            <td class="py-3 px-4 text-slate-400">${b.destacado}</td>
+                        </tr>
+                    `;
+                });
+
+                document.getElementById("tabla-bancos-body").innerHTML = rows;
+            } else {
+                secFin.classList.add("hidden");
+            }
+        }
+
+        function inicializarAppCoches() {
+            const bd = window.BASE_DATOS_COCHES || {};
+            const selMarca = document.getElementById("select-marca");
+            selMarca.innerHTML = "";
+
+            const opt0 = document.createElement("option");
+            opt0.value = "--";
+            opt0.textContent = "-- Selecciona o escribe abajo --";
+            selMarca.appendChild(opt0);
+
+            Object.keys(bd).sort((a, b) => a.localeCompare(b, "es")).forEach(marca => {
+                const opt = document.createElement("option");
+                opt.value = marca;
+                opt.textContent = marca;
+                selMarca.appendChild(opt);
+            });
+
+            selMarca.value = "BYD";
+            poblarModelosYAutocompletar(false);
+            analizar();
+        }
+
+        document.addEventListener("DOMContentLoaded", () => {
+            document.getElementById("select-marca").addEventListener("change", () => {
+                poblarModelosYAutocompletar(false);
+                analizar();
+            });
+            document.getElementById("input-marca-man").addEventListener("input", () => {
+                poblarModelosYAutocompletar(false);
+                analizar();
+            });
+            document.getElementById("select-modelo").addEventListener("change", () => {
+                poblarModelosYAutocompletar(false);
+                analizar();
+            });
+            document.getElementById("input-modelo-man").addEventListener("input", () => {
+                poblarModelosYAutocompletar(true);
+                analizar();
+            });
+            document.getElementById("combustible").addEventListener("change", () => {
+                actualizarVisibilidadBateria();
+                analizar();
+            });
+            document.getElementById("modo-bateria").addEventListener("change", () => {
+                actualizarVisibilidadBateria();
+                analizar();
+            });
+            document.getElementById("chk-financiacion").addEventListener("change", (e) => {
+                const bloque = document.getElementById("bloque-financiacion");
+                bloque.classList.toggle("hidden", !e.target.checked);
+                bloque.classList.toggle("grid", e.target.checked);
+                analizar();
+            });
+            document.getElementById("btn-analizar").addEventListener("click", analizar);
+
+            [
+                "precio-nuevo", "potencia-cv", "transmision", "ano-mat", "km-actuales",
+                "precio-contado", "etiqueta-dgt", "soh-pct", "autonomia-km", "autonomia-ref-km",
+                "fin-total-directo", "fin-entrada", "fin-cuota", "fin-meses", "fin-tin"
+            ].forEach(id => document.getElementById(id).addEventListener("input", analizar));
+
+            inicializarAppCoches();
+        });
+    </script>
+</body>
+</html>
